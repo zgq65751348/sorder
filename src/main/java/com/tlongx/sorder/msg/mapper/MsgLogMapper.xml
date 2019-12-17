@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.msg.dao.MsgLogMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.msg.pojo.MsgLog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="mid" jdbcType="INTEGER" property="mid" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+  </resultMap>
+    <insert id="insertBatch">
+      INSERT INTO tl_msg_log
+      ( mid,uid,status,crtime)
+      VALUES
+      <foreach collection ="list" item="item" separator =",">
+        (#{item.mid},#{item.uid},#{item.status},#{item.crtime})
+      </foreach >
+    </insert>
+  <select id="selectList" resultType="com.tlongx.sorder.dto.MsgDto">
+      select ml.id,m.title,m.mid,m.context,ml.status,ml.crtime
+      from tl_msg_log ml
+      left join tl_msg m on m.mid =ml.mid
+      <where>
+        <if test="uid!=null and uid!=''">
+          ml.uid=#{uid}
+        </if>
+        <if test="id!=null and id!=''">
+          ml.id=#{id}
+        </if>
+      </where>
+      order by ml.crtime desc
+  </select>
+</mapper>

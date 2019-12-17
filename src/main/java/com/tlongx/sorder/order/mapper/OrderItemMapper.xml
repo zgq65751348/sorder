@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.order.dao.OrderItemMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.order.pojo.OrderItem">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="oid" jdbcType="VARCHAR" property="oid" />
+    <result column="food_name" jdbcType="VARCHAR" property="foodName" />
+    <result column="cname" jdbcType="VARCHAR" property="cname" />
+    <result column="wname" jdbcType="VARCHAR" property="wname" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="total_price" jdbcType="DECIMAL" property="totalPrice" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="sub_time" jdbcType="VARCHAR" property="subTime" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+  </resultMap>
+    <select id="selectList" resultType="com.tlongx.sorder.dto.OrderItemDto">
+        select id,oid,food_name foodName,cname,wname,price,num ,total_price totalPrice,photo,sub_time subTime,
+        status,crtime,uptime,wfid,type,uid
+        from tl_order_item
+        <where>
+          <if test="uid!=null and uid!=''">
+            uid=#{uid}
+          </if>
+          <if test="subTime!=null and subTime!=''">
+            and sub_time =#{subTime}
+          </if>
+          <if test="type!=null and type!=''">
+            and type=#{type}
+          </if>
+        </where>
+        order by crtime desc
+    </select>
+    <select id="selectListByIds" resultType="com.tlongx.sorder.dto.OrderDto">
+      SELECT distinct oi.id,oi.oid,o.uid,oi.status,o.pay_type payType,oi.total_price payPrice,o.out_trade_no outTradeNo,oi.food_name foodName,oi.num,oi.wfid,u.taste,u.username,s.sname,uc.cname,uc.wname,uc.wid,u.balance
+      FROM tl_order_item oi
+      LEFT JOIN tl_order o on o.oid=oi.oid
+      left join tl_user u on u.uid=o.uid
+      LEFT JOIN tl_school s on s.sid = u.sid
+      LEFT JOIN tl_window_food wf on wf.id = oi.wfid
+      LEFT JOIN tl_user_canteen uc on uc.wid = wf.wid
+      <where>
+        oi.id in
+        <if test="list!=null and list.size()>0">
+          <foreach collection="list" index="index" item="item"
+                   open="(" close=")" separator=",">
+            #{item}
+          </foreach>
+        </if>
+      </where>
+    </select>
+    <select id="selectOIForComment" resultType="com.tlongx.sorder.dto.OrderItemDto">
+      SELECT oi.id,oi.uid,wf.fid,oi.food_name foodName,wf.type,w.cid,w.sid
+      FROM tl_order_item oi
+      LEFT JOIN tl_window_food wf ON wf.id=oi.wfid
+      LEFT JOIN tl_window w on w.wid=wf.wid
+      <where>
+        <if test="id!=null and id!=''">
+          oi.id=#{id}
+        </if>
+      </where>
+    </select>
+    <select id="selectDataStatisticList" resultType="java.util.Map">
+      select
+      (case
+      when oi.type=1 THEN oi.food_name
+      when oi.type=2 THEN oi.food_name
+      when oi.type=3 THEN oi.food_name
+      when oi.type=6 THEN oi.food_name
+      when oi.type=7 THEN oi.food_name
+      when oi.type=8 THEN oi.food_name
+      else NULL
+      END) as name,oi.type,
+      sum(CASE
+      WHEN oi.type=1 THEN oi.num
+      when oi.type=2 THEN oi.num
+      when oi.type=3 THEN oi.num
+      when oi.type=6 THEN oi.num
+      when oi.type=7 THEN oi.num
+      when oi.type=8 THEN oi.num
+      ELSE NULL END) as count,
+      IFNULL(SUM(CASE
+      WHEN oi.type=1 THEN oi.total_price
+      when oi.type=2 THEN oi.total_price
+      when oi.type=3 THEN oi.total_price
+      when oi.type=6 THEN oi.total_price
+      when oi.type=7 THEN oi.total_price
+      when oi.type=8 THEN oi.total_price
+      ELSE 0 END),0) as sum
+      FROM tl_order_item oi
+      LEFT JOIN tl_user u on u.uid =oi.uid
+      LEFT JOIN tl_school_class sc ON sc.scid=u.cid
+      LEFT JOIN tl_window_food wf on wf.id=oi.wfid
+      LEFT JOIN tl_window w on w.wid=wf.wid
+      LEFT JOIN tl_canteen c on c.cid=w.cid
+      WHERE oi.`status` in (3,4,6) and u.sid=#{sid} and w.type!=3
+      <if test="startTime!=null and startTime!=''">
+        and DATE_FORMAT(oi.sub_time,'%Y-%m-%d') = #{startTime}
+      </if>
+      <if test="cid!=null and cid!=''">
+        and c.cid=#{cid}
+      </if>
+      <if test="wid!=null and wid!=''">
+        AND w.wid=#{wid}
+      </if>
+      <if test="type!=null and type!=''">
+        <if test="type==2">
+          and u.type in (2,3)
+        </if>
+        <if test="type!=2">
+          and u.type =#{type}
+        </if>
+      </if>
+      <if test="grade!=null and grade!=''">
+        <if test="grade == - 1">
+          and sc.grade is null
+        </if>
+        <if test="grade != - 1">
+          AND sc.grade=#{grade}
+        </if>
+      </if>
+      <if test="classNum!=null and classNum!=''">
+        <if test="classNum == -1">
+          and sc.class_num is null
+        </if>
+        <if test="classNum != -1">
+          AND sc.class_num=#{classNum}
+        </if>
+      </if>
+      <if test="schoolNum!=null and schoolNum!=''">
+        and sc.type = #{schoolNum}
+      </if>
+      GROUP BY oi.wfid
+      ORDER BY oi.type
+    </select>
+  <select id="selectHasSubsidyOrderCount" resultType="java.lang.Integer">
+    SELECT COUNT(1)
+    FROM tl_order_item oi
+    LEFT JOIN tl_order o on o.oid=oi.oid
+    WHERE o.`status` = 1 and oi.sub_time =#{subTime}
+    and oi.type in
+    <foreach collection="types" item="type" index="index" open="(" separator="," close=")" >
+      #{type}
+    </foreach>
+    AND o.uid=#{uid}
+  </select>
+  <select id="selectCanteenOrderList" resultType="com.tlongx.sorder.dto.OrderItemDto">
+    select it.food_name foodName,it.cname,it.wname,it.price,it.total_price totalPrice,it.photo,it.sub_time subTime,
+    it.crtime,it.uptime,it.wfid,it.type,sum(if(it.`status` in (3,4,5,6) ,it.num,0)) as foodNum,sum(CASE it.status WHEN 3 THEN 1 ELSE 0 END) as noTake,sum(CASE it.status WHEN 4 THEN 1 ELSE 0 END) as YesTake,
+    if(it.`status` in (5) ,count(it.wfid),0) as refundNum
+    from tl_order_item it
+    LEFT JOIN tl_window_food wf on wf.id = it.wfid
+    LEFT JOIN tl_canteen_food cf on cf.fid = wf.fid
+    LEFT JOIN tl_canteen c on c.sid = cf.sid
+    <where>
+      <if test="uid!=null and sid!=''">
+        and cf.uid = #{uid}
+      </if>
+      <if test="sid!=null and sid!=''">
+        and cf.sid = #{sid}
+      </if>
+      <if test="cid!=null and cid!=''">
+        and c.cid = #{cid}
+      </if>
+      <if test="wid!=null and wid!=''">
+        and wf.wid = #{wid}
+      </if>
+      <if test="subTime!=null and subTime!=''">
+        and it.sub_Time = #{subTime}
+      </if>
+      <if test="type!=null and type!=''">
+        <if test="type==0">
+          and it.type in(1,2,3,4,5,6,7,8)
+        </if>
+        <if test="type!=0">
+          and it.type = #{type}
+        </if>
+      </if>
+    </where>
+    GROUP BY it.wfid
+    UNION ALL
+    select it.food_name foodName,it.cname,it.wname,it.price,it.total_price totalPrice,it.photo,it.sub_time subTime,
+    it.crtime,it.uptime,it.wfid,it.type,sum(if(it.`status` in (3,4,5,6) ,it.num,0)) as foodNum,sum(CASE it.status WHEN 3 THEN 1 ELSE 0 END) as noTake,sum(CASE it.status WHEN 4 THEN 1 ELSE 0 END) as YesTake,
+    if(it.`status` in (5) ,count(it.wfid),0) as refundNum
+    from tl_order_item it
+    LEFT JOIN tl_window_food wf on wf.id = it.wfid
+    LEFT JOIN tl_school_supfood su on su.id = wf.fid
+    LEFT JOIN tl_supplier_food sf on sf.fid = su.fid
+    LEFT JOIN tl_window w on w.wid = wf.wid
+    <where>
+      <if test="sid!=null and sid!=''">
+        and su.sid = #{sid}
+      </if>
+      <if test="cid!=null and cid!=''">
+        and w.cid = #{cid}
+      </if>
+      <if test="wid!=null and wid!=''">
+        and wf.wid = #{wid}
+      </if>
+      <if test="subTime!=null and subTime!=''">
+        and it.sub_Time = #{subTime}
+      </if>
+      <if test="type!=null and type!=''">
+        <if test="type==0">
+          and it.type in(1,2,3,4,5,6,7,8)
+        </if>
+        <if test="type!=0">
+          and it.type = #{type}
+        </if>
+      </if>
+    </where>
+    GROUP BY it.wfid
+    order by crtime desc
+  </select>
+  <select id="selectSupplierOrderList" resultType="com.tlongx.sorder.dto.OrderItemDto">
+    select it.food_name foodName,it.cname,it.wname,it.price,it.num,it.total_price totalPrice,it.photo,it.sub_time subTime,
+    it.crtime,it.uptime,it.wfid,it.type,it.uid,if(it.`status` in (3,4,6) ,count(it.wfid),0) as foodNum,sum(CASE it.status WHEN 3 THEN 1 ELSE 0 END) as noTake,sum(CASE it.status WHEN 4 THEN 1 ELSE 0 END) as YesTake
+    from tl_order_item it
+    LEFT JOIN tl_window_food wf on wf.id = it.wfid
+    LEFT JOIN tl_school_supfood su on su.id = wf.fid
+    LEFT JOIN tl_supplier_food sf on sf.fid = su.fid
+    <where>
+      <if test="uid!=null and uid!=''">
+        and sf.uid = #{uid}
+      </if>
+      <if test="sid!=null and sid!=''">
+        and su.sid = #{sid}
+      </if>
+      <if test="subTime!=null and subTime!=''">
+        and it.sub_Time = #{subTime}
+      </if>
+      <if test="type!=null and type!=''">
+        <if test="type==0">
+          and it.type in(1,2,3,4,5,6,7,8)
+        </if>
+        <if test="type!=0">
+          and it.type = #{type}
+        </if>
+      </if>
+    </where>
+    group BY it.wfid
+    order by it.crtime desc
+  </select>
+  <select id="selectOrderItemList" resultType="com.tlongx.sorder.order.pojo.OrderItem">
+    select oid,uid,sub_time,status from tl_order_item where DATE_FORMAT(sub_time,'%Y-%m-%d') = DATE_FORMAT(NOW(),'%Y-%m-%d')and status in(1,3)
+  </select>
+  <select id="selectCanteenOrderUser" resultType="com.tlongx.sorder.dto.OrderItemDto">
+    select distinct it.uid,it.crtime
+    from tl_order_item it
+    LEFT JOIN tl_window_food wf on wf.id = it.wfid
+    LEFT JOIN tl_canteen_food cf on cf.fid = wf.fid
+    LEFT JOIN tl_canteen c on c.sid = cf.sid
+    <where>
+      <if test="uid!=null and sid!=''">
+        and cf.uid = #{uid}
+      </if>
+      <if test="sid!=null and sid!=''">
+        and cf.sid = #{sid}
+      </if>
+      <if test="cid!=null and cid!=''">
+        and c.cid = #{cid}
+      </if>
+      <if test="wid!=null and wid!=''">
+        and wf.wid = #{wid}
+      </if>
+      <if test="subTime!=null and subTime!=''">
+        and it.sub_Time = #{subTime}
+      </if>
+      <if test="type!=null and type!=''">
+        <if test="type==0">
+          and it.type in(1,2,3,4,5,6,7,8)
+        </if>
+        <if test="type!=0">
+          and it.type = #{type}
+        </if>
+      </if>
+      <if test="status!=null and status!=''">
+        and it.status=#{status}
+      </if>
+      <if test="wfid!=null and wfid!=''">
+        and it.wfid=#{wfid}
+      </if>
+    </where>
+    UNION
+    select distinct it.uid,it.crtime
+    from tl_order_item it
+    LEFT JOIN tl_window_food wf on wf.id = it.wfid
+    LEFT JOIN tl_school_supfood su on su.id = wf.fid
+    LEFT JOIN tl_supplier_food sf on sf.fid = su.fid
+    LEFT JOIN tl_window w on w.wid = wf.wid
+    <where>
+      <if test="sid!=null and sid!=''">
+        and su.sid = #{sid}
+      </if>
+      <if test="cid!=null and cid!=''">
+        and w.cid = #{cid}
+      </if>
+      <if test="wid!=null and wid!=''">
+        and wf.wid = #{wid}
+      </if>
+      <if test="subTime!=null and subTime!=''">
+        and it.sub_Time = #{subTime}
+      </if>
+      <if test="type!=null and type!=''">
+        <if test="type==0">
+          and it.type in(1,2,3,4,5,6,7,8)
+        </if>
+        <if test="type!=0">
+          and it.type = #{type}
+        </if>
+      </if>
+      <if test="status!=null and status!=''">
+        and it.status=#{status}
+      </if>
+      <if test="wfid!=null and wfid!=''">
+        and it.wfid=#{wfid}
+      </if>
+    </where>
+    order by crtime desc
+  </select>
+  <select id="selectSupplierOrderUser" resultType="com.tlongx.sorder.dto.OrderItemDto">
+    select distinct it.uid,it.crtime
+    from tl_order_item it
+    LEFT JOIN tl_window_food wf on wf.id = it.wfid
+    LEFT JOIN tl_school_supfood su on su.id = wf.fid
+    LEFT JOIN tl_supplier_food sf on sf.fid = su.fid
+    <where>
+      <if test="uid!=null and uid!=''">
+        and sf.uid = #{uid}
+      </if>
+      <if test="sid!=null and sid!=''">
+        and su.sid = #{sid}
+      </if>
+      <if test="subTime!=null and subTime!=''">
+        and it.sub_Time = #{subTime}
+      </if>
+      <if test="type!=null and type!=''">
+        <if test="type==0">
+          and it.type in(1,2,3,4,5,6,7,8)
+        </if>
+        <if test="type!=0">
+          and it.type = #{type}
+        </if>
+      </if>
+      <if test="status!=null and status!=''">
+        and it.status=#{status}
+      </if>
+    </where>
+    order by it.crtime desc
+  </select>
+
+    <select id="selectMarketSaleList" resultType="java.util.Map">
+         SELECT
+			(case
+			when oi.type=5 then oi.food_name
+			when oi.type=4 then oi.food_name
+			ELSE NULL END) as name,
+      sum(CASE
+			WHEN oi.type=5 THEN oi.num
+			WHEN oi.type=4 THEN oi.num
+			ELSE NULL END) as count,
+			SUM(CASE
+			WHEN oi.type=5 THEN oi.total_price
+			WHEN oi.type=4 THEN oi.total_price
+			ELSE NULL END)as sum
+      FROM tl_order_item oi
+      LEFT JOIN tl_user u on u.uid =oi.uid
+      LEFT JOIN tl_school_class sc ON sc.scid=u.cid
+      LEFT JOIN tl_window_food wf on wf.id=oi.wfid
+      WHERE oi.`status` in (3,4,6) and u.sid=#{sid}
+        <if test="startTime!=null and startTime!=''">
+            and DATE_FORMAT(oi.sub_time,'%Y-%m-%d') = #{startTime}
+        </if>
+        <if test="type!=null and type!=''">
+            <if test="type==2">
+                and u.type in (2,3)
+            </if>
+            <if test="type!=2">
+                and u.type =#{type}
+            </if>
+        </if>
+        <if test="grade!=null and grade!=''">
+            <if test="grade == - 1">
+                and sc.grade is null
+            </if>
+            <if test="grade != - 1">
+                AND sc.grade=#{grade}
+            </if>
+        </if>
+        <if test="classNum!=null and classNum!=''">
+            <if test="classNum == -1">
+                and sc.class_num is null
+            </if>
+            <if test="classNum != -1">
+                AND sc.class_num=#{classNum}
+            </if>
+        </if>
+        <if test="schoolNum!=null and schoolNum!=''">
+            and sc.type = #{schoolNum}
+        </if>
+      GROUP BY oi.food_name
+    </select>
+</mapper>

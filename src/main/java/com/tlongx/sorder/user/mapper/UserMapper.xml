@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.user.dao.UserMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.user.pojo.User">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="token" jdbcType="VARCHAR" property="token" />
+    <result column="pay_password" jdbcType="VARCHAR" property="payPassword" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="sex" jdbcType="INTEGER" property="sex" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="balance" jdbcType="DECIMAL" property="balance" />
+    <result column="stu_num" jdbcType="VARCHAR" property="stuNum" />
+    <result column="icon" jdbcType="VARCHAR" property="icon" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+    <result column="subsidy_price" jdbcType="DECIMAL" property="subsidyPrice" />
+    <result column="bfsb_status" jdbcType="BIT" property="bfsbStatus" />
+    <result column="lsb_status" jdbcType="BIT" property="lsbStatus" />
+    <result column="dsb_status" jdbcType="BIT" property="dsbStatus" />
+    <result column="open_id" jdbcType="VARCHAR" property="openId"/>
+  </resultMap>
+  <insert id="insertUserBatch">
+    INSERT INTO tl_user
+    (uid,username,phone,password,sex,type,status,sid,cid,stu_num,crtime)
+    VALUES
+    <foreach collection ="list" item="item" separator =",">
+      (#{item.uid}, #{item.username},#{item.phone},#{item.password},#{item.sex},#{item.type},#{item.status},#{item.sid},#{item.cid},#{item.stuNum},#{item.crtime})
+    </foreach >
+  </insert>
+
+
+  <select id="selectUserInfo" resultType="java.util.Map">
+      SELECT u.uid,u.icon,u.username,u.phone,u.token,u.type,if(u.type='1',if(stu_num!=null or stu_num!='',"1","0"),status) as status,
+      if(u.pay_password is NOT NULL AND u.pay_password <![CDATA[<>]]>'','1','0') isPayPassWord,u.icon,u.sex,u.balance,u.subsidy_price subsidyPrice,
+      u.subsidy_price subPrice,u.stu_num stuNum,u.sid,s.sname,s.subsidy_status subStatus,sc.grade,sc.class_num classNum,u.cid,u.open_id
+      FROM tl_user u
+      LEFT JOIN tl_school s ON s.sid=u.sid
+      LEFT JOIN  tl_school_class sc ON  sc.scid=u.cid
+      <where>
+        <if test= "token!=null and token!=''">
+          u.token =#{token}
+        </if>
+        <if test="phone!=null and phone!=''">
+          and u.phone=#{phone}
+        </if>
+        <if test="password!=null and password!=''">
+          and u.password=#{password}
+        </if>
+        <if test="uid!=null and uid!=''">
+          and u.uid=#{uid}
+        </if>
+      </where>
+    </select>
+  <select id="selectUserList" resultType="com.tlongx.sorder.dto.UserDto">
+      SELECT u.uid,u.username,u.sex,u.type,u.stu_num stuNum,u.phone,u.open_id,u.balance,s.sid,s.sname,sc.grade,sc.class_num classNum,u.icon,u.status,u.subsidy_price as subsidyPrice,sc.type as schoolType
+      FROM tl_user u
+      left join tl_school s on s.sid=u.sid
+      left join tl_school_class sc on sc.scid=u.cid
+      <where>
+        <if test="sid!=null and sid!=''">
+          u.sid=#{sid}
+        </if>
+        <if test="username!=null and username!=''">
+          and u.username like '%${username}%'
+        </if>
+        <if test="stuNum!=null and stuNum!=''">
+          and u.stu_num like '%${stuNum}%'
+        </if>
+        <if test="type!=null and type!=''">
+            <if test="type!=5">
+              and u.type =#{type}
+            </if>
+            <if test="type==5">
+              and u.type in (2,3)
+            </if>
+        </if>
+        <if test="grade!=null and grade!=''">
+            <if test="grade==-1">
+              and sc.grade is null
+            </if>
+          <if test="grade!=-1">
+            and sc.grade=#{grade}
+          </if>
+        </if>
+        <if test="classNum!=null and classNum!=''">
+          <if test="classNum==-1">
+            and sc.class_num is null
+          </if>
+          <if test="classNum!=-1">
+            and sc.class_num=#{classNum}
+          </if>
+        </if>
+        <if test="schoolNum!=null and schoolNum!=''">
+          and sc.type = #{schoolNum}
+        </if>
+        <if test="phone!=null and phone!=''">
+          and u.phone=#{phone}
+        </if>
+        <if test="status!=null and status!=''">
+          and u.status = #{status}
+        </if>
+      </where>
+    order by u.crtime desc
+  </select>
+  <select id="selectTeacherList" resultType="com.tlongx.sorder.dto.UserDto">
+    SELECT u.uid,u.username,u.sex,u.phone,sc.grade,sc.class_num classNum,sc.type as schoolType
+    ,u.balance,u.type,u.`status`,u.crtime,u.uptime,u.open_id
+    FROM tl_user u
+    LEFT JOIN tl_school_class sc on sc.scid=u.cid
+    <where>
+      u.type in (2,3) and  u.sid = #{sid}
+      <if test="cid!=null and cid!=''">
+        and u.cid=#{cid}
+      </if>
+      <if test="username!=null and username!=''">
+        and u.username like '%${username}%'
+      </if>
+      <if test="phone!=null and phone!=''">
+        and u.phone like '%${phone}'
+      </if>
+      <if test="type!=null and type!=''">
+        and u.type =#{type}
+      </if>
+      <if test="grade!=null and grade!=''">
+        <if test="grade == - 1">
+          and sc.grade is null
+        </if>
+        <if test="grade != - 1">
+          AND sc.grade=#{grade}
+        </if>
+      </if>
+      <if test="classNum!=null and classNum!=''">
+        <if test="classNum == -1">
+          and sc.class_num is null
+        </if>
+        <if test="classNum != -1">
+          AND sc.class_num=#{classNum}
+        </if>
+      </if>
+      <if test="schoolNum!=null and schoolNum!=''">
+        and sc.type = #{schoolNum}
+      </if>
+      ORDER BY u.status DESC
+    </where>
+
+  </select>
+  <select id="selectAllUid" resultType="java.lang.String">
+    select uid from tl_user
+    <where>
+      <if test="sid!=null and sid!=''">
+          sid=#{sid}
+      </if>
+    </where>
+    order by uid
+  </select>
+  <select id="selectBalanceSum" resultType="java.util.Map">
+    select sum(u.balance) as totalBalance ,sum(u.subsidy_price) as totalSub, t.balance as schoolBalance from tl_user u
+    left join tl_school t on t.sid = u.sid
+    where t.sid = #{sid}
+    <if test="type!=null">
+      and u.type = #{type}
+    </if>
+  </select>
+  <select id="selectTeachAndTradeList" resultType="java.util.Map">
+    select * from (select sum(znum) znum,sum(wnum) wnum,sum(anum) anum ,uid,username,phone,balance from (
+    select count(1) znum,0 as wnum,0 as anum ,t.uid,u.username,u.balance,u.phone
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_order_item oi on oi.oid = t.oid
+    where oi.type in (1,6) and u.sid = #{sid} and  u.type in (2,3)
+    <if test="crtime!=null">
+      and t.crtime BETWEEN date_add(#{crtime},interval -day(#{crtime})+1 day) and last_day(#{crtime})
+    </if>
+    GROUP BY uid
+    union
+    select 0 as znum,count(1) wnum,0 as anum,t.uid,u.username,u.balance,u.phone
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_order_item oi on oi.oid = t.oid
+    where oi.type in (2,7) and u.sid = #{sid} and u.type in (2,3)
+    <if test="crtime!=null">
+      and t.crtime BETWEEN date_add(#{crtime},interval -day(#{crtime})+1 day) and last_day(#{crtime})
+    </if>
+    GROUP BY uid
+    union
+    select 0 as znum,0 as wunum,count(1) anum,t.uid,u.username,u.balance,u.phone
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_order_item oi on oi.oid = t.oid
+    where oi.type in (3,8) and u.sid = #{sid} and  u.type in (2,3)
+    <if test="crtime!=null">
+      and t.crtime BETWEEN date_add(#{crtime},interval -day(#{crtime})+1 day) and last_day(#{crtime})
+    </if>
+    GROUP BY uid)tm
+    GROUP BY uid
+    union
+    select 0 as znum,0 as wnum,0 as anum,uid,username,phone,balance
+    from tl_user
+    where type in (2,3) and sid = #{sid})tn
+    <where>
+      <if test="username!=null and username!=''">
+        and username like '%${username}%'
+      </if>
+      <if test="phone!=null and phone!=''">
+        and phone=#{phone}
+      </if>
+    </where>
+    group by uid
+    order by znum desc,wnum desc,anum desc
+  </select>
+
+
+</mapper>

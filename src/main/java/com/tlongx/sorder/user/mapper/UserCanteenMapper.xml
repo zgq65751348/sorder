@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.user.dao.UserCanteenMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.user.pojo.UserCanteen">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="uname" jdbcType="VARCHAR" property="uname" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="token" jdbcType="VARCHAR" property="token" />
+    <result column="balance" jdbcType="DOUBLE" property="balance" />
+    <result column="sex" jdbcType="INTEGER" property="sex" />
+    <result column="portrait" jdbcType="VARCHAR" property="portrait" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="role" jdbcType="VARCHAR" property="role" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="parent_id" jdbcType="VARCHAR" property="parentId" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="sname" jdbcType="VARCHAR" property="sname" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="cname" jdbcType="VARCHAR" property="cname" />
+    <result column="wid" jdbcType="INTEGER" property="wid" />
+    <result column="wname" jdbcType="VARCHAR" property="wname" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+  </resultMap>
+
+    <select id="selectUserCanteenInfo" resultType="java.util.Map">
+      SELECT uc.uid,uc.uname,uc.phone,uc.token,uc.type,uc.sid,uc.photo,uc.sname,uc.cname,c.cid,uc.wid,uc.portrait
+      FROM tl_user_canteen uc
+      LEFT JOIN tl_school s on s.sid=uc.sid
+      LEFT JOIN tl_canteen c on c.cid=uc.cid
+      <where>
+        <if test= "token!=null and token!=''">
+          uc.token =#{token}
+        </if>
+        <if test="phone!=null and phone!=''">
+          and uc.phone=#{phone}
+        </if>
+        <if test="password!=null and password!=''">
+          and uc.password=#{password}
+        </if>
+      </where>
+    </select>
+
+  <select id="selectUserCanteenList" resultType="com.tlongx.sorder.user.pojo.UserCanteen">
+      SELECT uc.uid,uc.uname,uc.photo,uc.role,uc.phone,uc.crtime,uc.cname,uc.wname,uc.cid,uc.sex,uc.wid
+      FROM tl_user_canteen uc
+      <where>
+        uc.cid=#{cid}
+        <if test="keyword!=null">
+          and  CONCAT(uc.uname,uc.phone) LIKE CONCAT ('%', #{keyword},'%')
+        </if>
+      </where>
+  </select>
+    <select id="selectAllUid" resultType="java.lang.String">
+      select uid from tl_user_canteen
+       <where>
+         <if test="sid!=null and sid!=''">
+            sid=#{sid}
+         </if>
+       </where>
+       order by uid
+    </select>
+</mapper>

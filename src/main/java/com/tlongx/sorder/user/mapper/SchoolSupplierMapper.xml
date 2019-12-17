@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.user.dao.SchoolSupplierMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.user.pojo.SchoolSupplier">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+  </resultMap>
+  <select id="selectUserSupplierList" resultType="com.tlongx.sorder.dto.SupplierDto">
+      SELECT ss.id,us.uid,us.shop_name shopName,us.leader_name leaderName,us.leader_phone leaderPhone,us.crtime,us.approve_time approveTime
+      ,ss.`status`,m.mname
+      FROM tl_school_supplier ss
+      LEFT JOIN tl_user_supplier us on us.uid=ss.uid
+      left join tl_manager m on m.mid=ss.mid
+      <where>
+        <if test="sid!=null and sid!=''">
+          ss.sid=#{sid}
+        </if>
+        <if test="shopName!=null and shopName!=''">
+          and us.shop_name like '%${shopNmae}%'
+        </if>
+        <if test="leaderPhone!=null and leaderPhone!=''">
+          and us.leader_phone like '%${leaderPhone}%'
+        </if>
+        <if test="leaderName!=null and leaderName!=''">
+          and us.leader_name like '%${leaderName}%'
+        </if>
+        <if test="approveTime!=null and approveTime!=''">
+          and DATE_FORMAT(us.approve_time,'%Y-%m-%d')=DATE_FORMAT(#{approveTime},'%Y-%m-%d')
+        </if>
+        <if test="status!=null and status!=''">
+          and us.status=#{status}
+        </if>
+      </where>
+      order by us.crtime desc
+  </select>
+
+    <select id="selectSchoolBySup" resultType="com.tlongx.sorder.manager.pojo.School">
+        SELECT s.sid,s.sname
+        FROM tl_school_supplier ss
+        JOIN tl_school s on s.sid=ss.sid
+        <where>
+            <if test="status!=null and status!=''">
+                ss.status=#{status}
+            </if>
+            <if test="uid!=null and uid!=''">
+                and ss.uid=#{uid}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectUserSupplierBySidList" resultType="com.tlongx.sorder.user.pojo.UserSupplier">
+        SELECT DISTINCT ss.id,us.uid,us.shop_name shopName,us.portrait,us.axf,us.m_sale_count mSaleCount,us.score,us.main_product mainProduct
+        FROM tl_supplier_food sf
+        LEFT JOIN tl_user_supplier us on us.uid =sf.uid
+        LEFT JOIN tl_school_supplier ss on ss.uid =us.uid
+        WHERE ss.sid=#{sid} and ss.status=1
+        <if test="foodName!=null">
+            and sf.food_name LIKE CONCAT ('%', #{foodName},'%')
+        </if>
+    </select>
+    <select id="selectAllSupUid" resultType="java.lang.String">
+        select uid
+        from tl_school_supplier
+        <where>
+            <if test="sid!=null and sid!=''">
+                sid=#{sid}
+            </if>
+        </where>
+        order by id
+    </select>
+    <select id="selectSchoolListBySupId" resultType="com.tlongx.sorder.manager.pojo.School">
+        SELECT ss.sid,s.sname
+        FROM tl_school_supplier ss
+        JOIN tl_school s on s.sid =ss.sid
+        WHERE ss.uid=#{uid} and ss.status =1
+    </select>
+
+
+</mapper>

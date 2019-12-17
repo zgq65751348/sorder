@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.operation.dao.OperationLogMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.operation.pojo.OperationLog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="method" jdbcType="VARCHAR" property="method" />
+    <result column="oper" jdbcType="VARCHAR" property="oper" />
+    <result column="ip" jdbcType="VARCHAR" property="ip" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="param" jdbcType="LONGVARCHAR" property="param" />
+    <result column="mname" jdbcType="VARCHAR" property="mname" />
+  </resultMap>
+  <select id="selectOperLogList" resultType="com.tlongx.sorder.operation.pojo.OperationLog">
+    select id,method,oper,ip,crtime,sid,param,mname from tl_operation_log where sid=#{sid} order by crtime desc
+  </select>
+</mapper>

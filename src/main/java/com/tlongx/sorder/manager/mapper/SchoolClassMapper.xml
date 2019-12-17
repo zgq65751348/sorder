@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.manager.dao.SchoolClassMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.manager.pojo.SchoolClass">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="scid" jdbcType="INTEGER" property="scid" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="grade" jdbcType="INTEGER" property="grade" />
+    <result column="class_num" jdbcType="INTEGER" property="classNum" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+  </resultMap>
+
+  <select id="selectSchoolClassList" resultType="com.tlongx.sorder.manager.pojo.SchoolClass">
+    SELECT sc.scid,sc.grade,sc.class_num classNum,sc.type
+    FROM tl_school_class sc
+    <where>
+      <if test="sid!=null">
+        sc.sid=#{sid}
+      </if>
+      and sc.grade!='' and sc.class_num!=''
+    </where>
+    order by sc.grade asc,sc.class_num asc
+  </select>
+  <select id="selectSchoolGradeList" resultType="com.tlongx.sorder.manager.pojo.SchoolClass">
+    SELECT DISTINCT grade,type,class_num classNum,sid,scid
+    FROM tl_school_class
+    <where>
+      sid=#{sid}
+      <if test="type!=null and type!=''">
+        and type = #{type}
+      </if>
+      <if test="grade!=null and grade!=''">
+        and grade = #{grade}
+      </if>
+      <if test="classNum!=null and classNum!=''">
+        and class_num = #{classNum}
+      </if>
+    </where>
+    order by grade asc
+  </select>
+  <select id="selectClassNumList" resultType="com.tlongx.sorder.manager.pojo.SchoolClass">
+    SELECT class_num classNum
+    FROM tl_school_class
+    <where>
+        grade=#{grade} and sid=#{sid}
+    </where>
+    order by classNum asc
+  </select>
+  <select id="selectGradeNum" resultType="int">
+    select count(*) from tl_school_class where sid = #{sid}
+    <if test="type!=null and type!=''">
+      and type=#{type}
+    </if>
+    <if test="grade!=null and grade!=''">
+      and grade=#{grade}
+    </if>
+  </select>
+  <select id="selectOneSchoolClass" resultType="com.tlongx.sorder.manager.pojo.SchoolClass">
+    select scid,sid,type,grade,class_num as classNum
+    from tl_school_class
+    where sid=#{sid} and type=#{type}
+    <if test="grade!=null">
+      <if test="grade ==-1">
+        and grade is null
+      </if>
+      <if test="grade!=-1">
+        and grade =#{grade}
+      </if>
+    </if>
+    <if test="classNum!=null">
+      <if test="classNum ==-1">
+        and class_num is null
+      </if>
+      <if test="classNum!=-1">
+        and class_num =#{classNum}
+      </if>
+    </if>
+  </select>
+</mapper>

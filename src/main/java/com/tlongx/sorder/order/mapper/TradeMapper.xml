@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.order.dao.TradeMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.order.pojo.Trade">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="tid" jdbcType="VARCHAR" property="tid" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="oid" jdbcType="VARCHAR" property="oid" />
+    <result column="out_trade_no" jdbcType="VARCHAR" property="outTradeNo" />
+    <result column="trade_type" jdbcType="INTEGER" property="tradeType" />
+    <result column="pay_type" jdbcType="INTEGER" property="payType" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+    <result column="account" jdbcType="VARCHAR" property="account" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="cause" jdbcType="VARCHAR" property="cause" />
+    <result column="ie" jdbcType="INTEGER" property="ie" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+    <result column="pay_order" jdbcType="VARCHAR" property="payOrder" />
+    <result column="mid" jdbcType="VARCHAR" property="mid" />
+    <result column="subsidy_price" jdbcType="DECIMAL" property="subsidyPrice" />
+    <result column="qr_code" jdbcType="INTEGER" property="qrCode" />
+  </resultMap>
+  <insert id="insertBatch">
+    INSERT INTO tl_trade
+    (tid,crtime,ie,status,price,pay_type,trade_type,uid)
+    VALUES
+    <foreach collection ="list" item="item" separator =",">
+      (#{item.tid}, #{item.crtime},#{item.ie},#{item.status},#{item.price},#{item.payType},#{item.tradeType},#{item.uid})
+    </foreach >
+  </insert>
+  <select id="selectTradeListByUid" resultType="com.tlongx.sorder.vo.TradeVo">
+    SELECT DISTINCT t.tid,t.oid,t.crtime as crtime,t.pay_type payType,t.trade_type tradeType,t.price,t.balance,t.ie,
+    oi.type as supType,t.`status`,oi.uid,GROUP_CONCAT(CONCAT(oi.food_name)) as foodName,t.subsidy_price subsidyPrice,t.use_subsidy useSubsidy
+    FROM tl_trade t
+    LEFT JOIN tl_order o ON o.oid=t.oid
+    LEFT JOIN tl_order_item oi on o.oid=oi.oid
+    <where>
+      <if test="uid!=null and uid!=''">
+        t.uid=#{uid}
+      </if>
+      <if test="status!=-1">
+        and t.`status`=1
+      </if>
+      <if test="mtime!=null">
+          and DATE_FORMAT(t.crtime,'%Y-%m') = #{mtime}
+      </if>
+      <if test="isPlat!=null">
+          and t.qr_code = 1
+      </if>
+    </where>
+    GROUP BY oid,tid
+    order by crtime desc
+  </select>
+  <select id="selectSubsidyHistoryList" resultType="com.tlongx.sorder.dto.SubsidyHistoryDto">
+    SELECT u.username,u.phone,u.type,t.trade_type tradeType,t.price,t.crtime,u.subsidy_price subsidyPrice
+    FROM tl_trade t
+    LEFT JOIN tl_user u on u.uid=t.uid
+    WHERE t.`status`=1 and t.pay_type=0 AND t.trade_type in (5,6) and u.sid=#{sid}
+    <if test="startTime!=null">
+      and DATE_FORMAT(t.crtime,'%Y-%m-%d') <![CDATA[>=]]> DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    </if>
+    <if test="endTime!=null">
+      and DATE_FORMAT(t.crtime,'%Y-%m-%d') <![CDATA[<=]]> DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    </if>
+    <if test="username!=null and username!=''">
+      and u.username LIKE CONCAT ('%', #{username},'%')
+    </if>
+    <if test="phone!=null and phone!=''">
+      and u.phone LIKE CONCAT ('%', #{phone},'%')
+    </if>
+    ORDER BY t.crtime DESC
+  </select>
+
+  <select id="selectPayOrderList" resultType="com.tlongx.sorder.dto.TradeDto">
+    select s.sname,DATE_FORMAT(t.crtime,'%Y-%m-%d') as crtime,m.mname as username,m.phone,t.price,t.balance,ma.mname,t.pay_order as payOrder,t.tid
+    from tl_trade t
+    LEFT JOIN tl_manager m on m.mid = t.uid
+    LEFT JOIN tl_manager ma on ma.mid = t.mid
+    left JOIN tl_school s on s.sid = m.sid
+    where ma.mid = #{mid}
+    <if test="startTime!=null">
+      and DATE_FORMAT(t.crtime,'%Y-%m-%d') <![CDATA[>=]]> DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    </if>
+    <if test="endTime!=null">
+      and DATE_FORMAT(t.crtime,'%Y-%m-%d') <![CDATA[<=]]> DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    </if>
+    <if test="sname!=null and sname!=''">
+      and s.sname  LIKE CONCAT ('%', #{sname},'%')
+    </if>
+    <if test="phone!=null and phone!=''">
+      and m.phone like concat ('%', #{phone},'%')
+    </if>
+    <if test="mname!=null and mname!=''">
+      and m.mname  LIKE CONCAT ('%', #{mname},'%')
+    </if>
+  </select>
+  <select id="selectOneTradeByOid" resultType="com.tlongx.sorder.order.pojo.Trade">
+    select tid,uid,oid,trade_type,pay_type,price,crtime
+    from tl_trade
+    where oid = #{oid}
+  </select>
+  <select id="selectTradeBySidAndTime" resultType="java.util.Map">
+    select sum(income)income,sum(expand)expand,crtime from (select sum(t.price) income, 0 as expand ,DATE_FORMAT(t.crtime,'%Y-%m-%d') crtime
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    where  t.`status`=1 and t.pay_type in(2,3,4) and t.trade_type in(1,2) and DATE_FORMAT(t.crtime,'%Y-%m-%d') = DATE_FORMAT(#{crtime},'%Y-%m-%d')
+    <if test="sid!=null">
+      and u.sid = #{sid}
+    </if>
+    <if test="isPlat!=null">
+        and t.qr_code is null
+    </if>
+    group by DATE_FORMAT(t.crtime,'%Y-%m-%d')
+    UNION all
+    select 0 as income ,SUM(t.price) expand,DATE_FORMAT(t.crtime,'%Y-%m-%d') crtime
+    from tl_trade t
+    LEFT JOIN tl_manager m on m.mid = t.uid
+    where t.`status`=1 and t.trade_type = 4 and DATE_FORMAT(t.crtime,'%Y-%m-%d') = DATE_FORMAT(#{crtime},'%Y-%m-%d')
+    <if test="sid!=null">
+      and m.sid = #{sid}
+    </if>
+      <if test="isPlat!=null">
+          and t.qr_code is null
+      </if>
+    GROUP BY DATE_FORMAT(t.crtime,'%Y-%m-%d')) tm
+    GROUP BY crtime
+  </select>
+  <select id="selectSchoolLedger" resultType="java.util.Map">
+   select time ,GROUP_CONCAT(sum,'$',ie,'$',payType) strarr from (
+    select * from (select
+    if(t.ie = 2,sum(case when t.ie = 2 then t.price else 0 end),SUM(case when t.ie=1 and t.trade_type!=3 then t.price else 0 end)) sum,t.ie,t.pay_type payType,DATE_FORMAT(t.crtime,'%Y-%m-%d') time
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where u.sid = #{sid} and t.status = 1 and t.pay_type = 2 and t.trade_type not in(4,5,6) and t.qr_code is null
+    GROUP BY ie,DATE_FORMAT(t.crtime,'%Y-%m-%d')
+		union
+		select
+		-SUM(case when t.ie=1 and t.trade_type=3 then t.price else 0 end) sum,
+		t.ie,t.pay_type payType,DATE_FORMAT(t.crtime,'%Y-%m-%d') time
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where u.sid = #{sid} and t.status = 1 and t.pay_type = 2 and t.trade_type not in(4,5,6) and t.ie = 1 and t.qr_code is null
+		GROUP BY DATE_FORMAT(t.crtime,'%Y-%m-%d'))tb
+    UNION ALL
+    select * from (select
+    if(t.ie = 2,sum(case when t.ie = 2 then t.price else 0 end),SUM(case when t.ie=1 and t.trade_type!=3 then t.price else 0 end)) sum,t.ie,t.pay_type payType,DATE_FORMAT(t.crtime,'%Y-%m-%d') time
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where u.sid = #{sid} and t.status = 1 and t.pay_type = 3 and t.trade_type not in(4,5,6) and t.qr_code is null
+    GROUP BY ie,DATE_FORMAT(t.crtime,'%Y-%m-%d')
+		union
+		select
+		-SUM(case when t.ie=1 and t.trade_type=3 then t.price else 0 end) sum,
+		t.ie,t.pay_type payType,DATE_FORMAT(t.crtime,'%Y-%m-%d') time
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where u.sid = #{sid} and t.status = 1 and t.pay_type = 3 and t.trade_type not in(4,5,6) and t.ie = 1 and t.qr_code is null
+		GROUP BY DATE_FORMAT(t.crtime,'%Y-%m-%d') )tn
+    UNION ALL
+    select * from (select
+    if(t.ie = 2,sum(case when t.ie = 2 then t.price else 0 end),SUM(case when t.ie=1 and t.trade_type!=3 then t.price else 0 end)) sum,t.ie,t.pay_type payType,DATE_FORMAT(t.crtime,'%Y-%m-%d') time
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where u.sid = #{sid} and t.status = 1 and t.pay_type = 4 and t.trade_type not in(4,5,6) and t.qr_code is null
+    GROUP BY ie,DATE_FORMAT(t.crtime,'%Y-%m-%d')
+		union
+		select
+		-SUM(case when t.ie=1 and t.trade_type=3 then t.price else 0 end) sum,
+		t.ie,t.pay_type payType,DATE_FORMAT(t.crtime,'%Y-%m-%d') time
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where u.sid = #{sid} and t.status = 1 and t.pay_type = 4 and t.trade_type not in(4,5,6) and t.ie = 1 and t.qr_code is null
+		GROUP BY DATE_FORMAT(t.crtime,'%Y-%m-%d') )tv
+    ) tm
+    GROUP BY time
+    ORDER BY time desc
+  </select>
+  <select id="selectSchoolBalanceOnPlat" resultType="java.util.Map">
+    select((select IFNULL(sum(t.price),0) from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    where u.sid = #{sid} and t.`status`=1 and t.pay_type in(2,3,4) and t.trade_type in(1,2))-
+    (select IFNULL(SUM(t.price),0)
+    from tl_trade t
+    LEFT JOIN tl_manager m on m.mid = t.uid
+    where m.sid = #{sid} and t.`status`=1 and t.trade_type = 4)) balance
+  </select>
+  <select id="selectStudentWalletTrade" resultType="java.util.Map">
+    select sum(incomeTotal)incomeTotal,sum(expandTotal)expandTotal,sum(sysTotal)sysTotal,DATE_FORMAT(crtime,'%Y-%m-%d')crtime from
+    (<!--学生充值-->
+    select  sum(t.price) incomeTotal,0 as expandTotal, 0 as sysTotal, DATE_FORMAT(t.crtime,'%Y-%m-%d')crtime
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    where u.sid = #{sid} and t.status = 1 and t.trade_type = 1 and DATE_FORMAT(t.crtime,'%Y-%m-%d') = DATE_FORMAT(#{crtime},'%Y-%m-%d') and t.qr_code is null
+    GROUP BY DATE_FORMAT(t.crtime,'%Y-%m-%d')
+    union all
+    <!--学生购买-->
+    select 0 as incomeTotal,(sum(case when t.trade_type =2 and t.pay_type in (1,5,6) then t.price else 0 end)-sum(case when t.trade_type =3 and t.pay_type = 1 then t.price else 0 end)) expandTotal,0 as sysTotal,DATE_FORMAT(t.crtime,'%Y-%m-%d')crtime
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    where u.sid = #{sid} and t.status = 1 and DATE_FORMAT(t.crtime,'%Y-%m-%d') = DATE_FORMAT(#{crtime},'%Y-%m-%d')
+    GROUP BY DATE_FORMAT(t.crtime,'%Y-%m-%d')
+    union all
+    <!--系统充值-->
+    select 0 as incomeTotal,0 as expandTotal,sum(s.price) sysTotal,DATE_FORMAT(s.crtime,'%Y-%m-%d')crtime
+    from tl_sys_recharge s
+    LEFT JOIN tl_user u on u.uid = s.uid
+    where u.sid = #{sid} and DATE_FORMAT(s.crtime,'%Y-%m-%d') = DATE_FORMAT(#{crtime},'%Y-%m-%d')
+    GROUP BY DATE_FORMAT(s.crtime,'%Y-%m-%d')) tm
+    GROUP BY crtime
+  </select>
+  <select id="selectSchoolSaleList" resultType="java.util.Map">
+    select (SUM(case when trade_type = 2 then price else 0 end)-SUM(case when trade_type = 3 then price else 0 end))sum, crtime,sname,sid
+    from (select DISTINCT t.trade_type,t.price,DATE_FORMAT(oi.sub_time,'%Y-%m-%d') crtime,s.sname,s.sid,t.tid
+    from tl_trade t
+    LEFT JOIN tl_order_item oi on oi.oid = t.oid
+    LEFT JOIN tl_user u on u.uid = oi.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where   DATE_SUB(DATE_FORMAT(#{crtime},'%Y-%m-%d'), INTERVAL 9 DAY) <![CDATA[<=]]> DATE_FORMAT(oi.sub_time,'%Y-%m-%d') and DATE_FORMAT(oi.sub_time,'%Y-%m-%d') <![CDATA[<]]> DATE_FORMAT(#{crtime},'%Y-%m-%d') and u.sid = #{sid} and t.status = 1
+    )tm
+    GROUP BY crtime
+  </select>
+  <select id="selectPlatBalance" resultType="java.util.Map">
+    select((select sum(t.price) sum
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    where t.`status`=1 and t.trade_type in(1,2) and t.pay_type in (2,3,4))-
+    (select sum(t.price) sum1
+    from tl_trade t
+    LEFT JOIN tl_manager m on m.mid = t.uid
+    where t.`status`=1 and t.trade_type = 4)) sum
+  </select>
+  <select id="selectPlatLedger" resultType="java.util.Map">
+    select sname,GROUP_CONCAT(sum,'-',payType)concat from (
+    select
+    (sum(case when t.trade_type in (1,2) then t.price else 0 end)-sum(case when t.trade_type =3 then t.price else 0 end)) sum,t.pay_type payType,s.sname
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where t.status = 1 and t.pay_type = 2
+    and DATE_FORMAT(#{crtime},'%Y-%m-%d') = DATE_FORMAT(t.crtime,'%Y-%m-%d')and t.qr_code is null
+    GROUP BY s.sid
+union all
+    select
+    (sum(case when t.trade_type in (1,2) then t.price else 0 end)-sum(case when t.trade_type =3 then t.price else 0 end)) sum,t.pay_type payType,s.sname
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where t.status = 1 and t.pay_type = 3
+    and DATE_FORMAT(#{crtime},'%Y-%m-%d') = DATE_FORMAT(t.crtime,'%Y-%m-%d')and t.qr_code is null
+    GROUP BY s.sid
+union all
+    select
+    (sum(case when t.trade_type in (1,2) then t.price else 0 end)-sum(case when t.trade_type =3 then t.price else 0 end)) sum,t.pay_type payType,s.sname
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid = t.uid
+    LEFT JOIN tl_school s on s.sid = u.sid
+    where t.status = 1 and t.pay_type = 4
+    and DATE_FORMAT(#{crtime},'%Y-%m-%d') = DATE_FORMAT(t.crtime,'%Y-%m-%d')and t.qr_code is null
+    GROUP BY s.sid
+    )tm
+    GROUP BY tm.sname
+  </select>
+
+    <select id="selectRefundPrice" resultType="decimal">
+        select IFNULL(sum(t.price),0) refundPrice from tl_trade t
+        left join tl_user u on u.uid = t.uid
+         where t.status = 1 and t.trade_type = 3 and t.pay_type in(2,3,4)and DATE_FORMAT(t.crtime,'%Y-%m-%d') = DATE_FORMAT(#{crtime},'%Y-%m-%d')
+        <if test="sid!=null">
+            and u.sid = #{sid}
+        </if>
+    </select>
+
+    <select id="selectTradeList" resultType="map">
+        select t.`status`,u.username,u.phone,t.tid,DATE_FORMAT(t.crtime,'%Y-%m-%d %H:%i:%s')crtime,t.price
+    from tl_trade t
+    left join tl_user u on u.uid = t.uid
+    left join tl_school s on s.sid = u.sid
+    <where>
+        <if test="isPlat!=null">
+            and t.qr_code =  1
+        </if>
+        <if test="sid!=null">
+            and u.sid = #{sid}
+        </if>
+        <if test="status!=null">
+            and t.`status` = #{status}
+        </if>
+        <if test="mtime!=null">
+            and DATE_FORMAT(t.crtime,'%Y-%m-%d') = DATE_FORMAT(#{mtime},'%Y-%m-%d')
+        </if>
+    </where>
+      order by crtime desc
+    </select>
+</mapper>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>导入通讯录</title>
+  <style>
+    html, body {
+      color: #333;
+      background: #e7e8eb;
+    }
+
+    .flex_box {
+      display: flex;
+      display: -ms-flexbox;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -moz-box;
+    }
+    .c_box {
+      width: 100%;
+      margin: auto;
+      /* display: flex; */
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #dedede;
+      background: #fff;
+    }
+    .c_step_area {
+      background: #ffffff;
+      border: 1px solid #dedede;
+      border-radius: 4px 4px 4px 4px;
+      width: 100%;
+      height: 340px;
+      display: flex;
+      flex-direction: column;
+      -webkit-flex-direction: column;
+      justify-content: space-around;
+      -webkit-justify-content: space-around;
+      padding: 0px 16px;
+      padding-top: 10px;
+    }
+    .step_icon {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 2px solid #999;
+      color: #999;
+      font-size: 22px;
+      text-align: center;
+      line-height: 40px;
+      border-radius: 50%;
+      box-sizing: border-box;
+      position: relative;
+      top: 2px;
+      margin-right: 10px;
+    }
+    .c_ding_btn_xs {
+      padding: 3px 5px;
+      font-size: 12px;
+      line-height: 1.5;
+      border-radius: 2px;
+      min-width: 74px;
+    }
+  .c_ding_btn {
+  display: inline-block;
+  padding: 5px 12px;
+  margin: 0 50px;
+  font-size: 16px;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid #c3c6ce;
+  background: #ffffff;
+  border-radius: 4px;
+  min-width: 80px;
+  color: #414141;
+  position: relative;
+  }
+    .step_line_content {
+      position: relative;
+    }
+    .step_line_content:before {
+      position: absolute;
+      content: " ";
+      top: -35px;
+      left: 18px;
+      width: 0px;
+      height: 26px;
+      border: 2px dashed #E4E4E4;
+    }
+    .c_ding_btn_primary_border {
+      border-color: #38adff;
+      color: #38adff;
+
+    }
+    #uploadimg{display: inline-block}
+  </style>
+</head>
+<body>
+<div style="width:1000px;margin:auto;margin-top:20px;">
+  <div class="home c_box flex_box">
+    <div class="c_step_area">
+   
+      <div class="step_line_content" style="margin-top:20px;">
+        <div>
+          <span class="step_icon" >1</span>
+          <span style="font-size:16px;" >
+            上传设备文件
+            <form action=""  id="uploadimg" method="post" enctype="multipart/form-data">
+                 <b></b><input  type="file" id="imgUpload" name="excel" draggable="false" accept="application/vnd.ms-excel">
+            </form>
+          </span>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div class="c_ding_btn c_ding_btn_primary_border uploadfilebtn" >上传</div>
+        <a href="organizational.html"><div class="c_ding_btn">返回</div></a>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+<script >
+  $(".uploadfilebtn ").click(function(){
+  if($('[name="excel"]').val()){
+    var form = new FormData(document.getElementById("uploadimg"));
+    var xmlHttp;
+    if(window.XMLHttpRequest){xmlHttp=new XMLHttpRequest();
+    }else if(window.ActiveXObject){xmlHttp=new ActiveXObject("Microsoft.XMLHTTP")}
+    xmlHttp.onreadystatechange=function(){
+      if(xmlHttp.readyState==4){
+        if(xmlHttp.status==200){
+          var txt=JSON.parse(xmlHttp.responseText);
+          console.log(txt);
+          if(txt.status=="200"){
+            myalert("操作成功！");
+          }else{
+            alert(txt.info);
+          }
+        }else{
+          alert("服务器错误，请稍后重试");
+        }
+      }
+    };
+    xmlHttp.open("POST","manager/addUserInfoBatch",true);
+    xmlHttp.send(form);
+  }else{
+    myalert("请选择要上传的表格文件。");
+  }
+
+  });
+</script>
+</body>
+</html>

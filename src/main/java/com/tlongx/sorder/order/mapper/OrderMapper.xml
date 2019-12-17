@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.order.dao.OrderMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.order.pojo.Order">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="oid" jdbcType="VARCHAR" property="oid" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="pay_type" jdbcType="INTEGER" property="payType" />
+    <result column="pay_price" jdbcType="DECIMAL" property="payPrice" />
+    <result column="out_trade_no" jdbcType="VARCHAR" property="outTradeNo" />
+    <result column="pay_time" jdbcType="TIMESTAMP" property="payTime" />
+    <result column="discounts_type" jdbcType="INTEGER" property="discountsType" />
+    <result column="subsidy_price" jdbcType="DECIMAL" property="subsidyPrice" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+  </resultMap>
+    <select id="selectStuEatingInfo" resultType="java.util.Map">
+      SELECT
+      u.username,MAX(CASE WHEN tmp.type=1 THEN tmp.count ELSE 0 END) as zc,
+      MAX(CASE WHEN tmp.type=2 THEN tmp.count ELSE 0 END) as wc,
+      MAX(CASE WHEN tmp.type=3 THEN tmp.count ELSE 0 END) as dc
+      FROM tl_user u
+      LEFT JOIN (
+              SELECT oi.uid,oi.type,IF(COUNT(oi.type)>0,1,0) count
+              FROM tl_order_item oi
+              LEFT JOIN tl_user u on u.uid=oi.uid
+              WHERE DATE_FORMAT(oi.sub_time,'%Y-%m-%d')=#{uptime} AND u.cid=#{cid}
+              GROUP BY oi.uid,oi.type
+      ) tmp on u.uid=tmp.uid
+      where u.cid = #{cid} and u.type = 1
+      GROUP BY u.uid
+    </select>
+    <update id="cleanOrder">
+      update tl_order set
+    </update>
+</mapper>

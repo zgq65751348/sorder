@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.food.dao.WindowFoodMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.food.pojo.WindowFood">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="wid" jdbcType="INTEGER" property="wid" />
+    <result column="fid" jdbcType="INTEGER" property="fid" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+  </resultMap>
+  <select id="selectCanteenFoodList" resultType="com.tlongx.sorder.dto.FoodDto">
+      SELECT wf.id,wf.wid,wf.fid,wf.`status`,cf.food_name foodName,cf.food_rmk foodRmk,
+      cf.photo,cf.price,cf.monthly_sales monthlySales,cf.supply_end supplyEnd,cf.supply_count supplyCount,cf.type
+      from tl_window_food wf
+      LEFT JOIN tl_canteen_food cf ON cf.fid=wf.fid
+      <where>
+        <if test="wid!=null and wid!=''">
+          wf.wid=#{wid} and wf.type=1
+        </if>
+        <if test="type!=null and type!=''">
+          and cf.type=#{type}
+        </if>
+        <if test="type==null">
+          and cf.type in (1,2,3,6,7,8)
+        </if>
+        <if test="ids!=null and ids.length>0">
+            and wf.id IN
+            <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="foodName!=null and foodName!=''">
+            and cf.food_name like '%${foodName}%'
+        </if>
+      </where>
+      order by wf.crtime desc
+  </select>
+    <select id="selectSupFoodList" resultType="com.tlongx.sorder.dto.FoodDto">
+        SELECT wf.id,sf.photo,sf.food_name foodName,sf.food_rmk foodRmk,ss.monthly_sales monthlySales,
+        ss.price,wf.price sellPrice,wf.status,ss.type,ss.supplier_count supplyCount,wf.daily_supply dailySupply
+        FROM tl_window_food wf
+        LEFT JOIN tl_school_supfood ss ON ss.id=wf.fid
+        LEFT JOIN tl_supplier_food sf ON sf.fid=ss.fid
+        WHERE wf.type=2
+        <if test="ids!=null and ids!=''">
+            and wf.id in
+            <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="foodName!=null and foodName!=''">
+            AND sf.food_Name LIKE CONCAT ('%', #{foodName},'%')
+        </if>
+        <if test="wid!=null and wid!=''">
+            AND wf.wid=#{wid}
+        </if>
+        <if test="type!=null and type!=''">
+            AND ss.type=#{type}
+        </if>
+        <if test="type==null">
+            AND ss.type in (1,2,3,6,7,8)
+        </if>
+        <if test="id!=null and id!=''">
+            AND wf.id=#{id}
+        </if>
+        <if test="uid!=null and uid!=''">
+            AND sf.uid=#{uid}
+        </if>
+        ORDER BY
+        <if test="sortScore!=null and sortScore!=''">
+            sf.score ${sortScore},wf.crtime desc
+        </if>
+        <if test="sortPrice!=null and sortPrice!=''">
+            wf.price ${sortPrice},wf.crtime desc
+        </if>
+        <if test="sortPrice==null and sortScore==null">
+            wf.crtime desc
+        </if>
+
+    </select>
+
+    <select id="selectSupFoodInfo" resultType="com.tlongx.sorder.dto.FoodDto">
+        SELECT wf.id,sf.photo,sf.food_name foodName,sf.food_rmk foodRmk,ss.type,ss.price,wf.price sellPrice,
+        ss.supplier_count supplierCount,ss.supply_start supplyStart,ss.supply_end supplyEnd
+        FROM tl_window_food wf
+        LEFT JOIN tl_school_supfood ss ON ss.id=wf.fid
+        LEFT JOIN tl_supplier_food sf ON sf.fid=ss.fid
+        where wf.id=#{id}
+    </select>
+
+    <select id="selectWindowFoodList" resultType="com.tlongx.sorder.dto.FoodDto">
+        (SELECT wf.id,wf.wid,wf.fid,wf.type,wf.status,cf.photo,cf.food_name foodName,cf.food_rmk foodRmk,cf.monthly_sales monthlySales,wf.price,wf.crtime as crtime
+        FROM tl_window_food wf
+        LEFT JOIN tl_canteen_food cf on cf.fid=wf.fid
+        <where> wf.type=1
+        <if test=" wid!=null and wid!='' ">
+            and wf.wid=#{wid}
+        </if>
+        <if test="type!=null">
+            AND cf.type=#{type}
+        </if>
+        <if test="type==null">
+            and cf.type in (1,2,3,4,5,6,7,8)
+        </if>
+        <if test="cid!=null and cid!=''">
+            and cf.cid = #{cid}
+        </if>
+        <if test="startTime!=null and endTime!=null">
+            <!--AND IF(cf.supply_start <![CDATA[>=]]> #{startTime},cf.supply_end <![CDATA[<=]]> #{endTime},cf.supply_end <![CDATA[>=]]> #{endTime})-->
+            AND IF(cf.supply_start <![CDATA[<=]]> #{startTime},cf.supply_end <![CDATA[>=]]> #{endTime},cf.supply_end <![CDATA[<=]]> #{endTime})
+        </if>
+        </where>
+        )
+        UNION
+        (SELECT wf.id,wf.wid as wid,wf.fid,wf.type,wf.status,sf.photo,sf.food_name foodName,sf.food_rmk foodRmk,ss.monthly_sales monthlySales,wf.price,wf.crtime as crtime
+        FROM tl_window_food wf
+        LEFT JOIN tl_school_supfood ss ON ss.id=wf.fid
+        LEFT JOIN tl_supplier_food sf on sf.fid=ss.fid
+        LEFT JOIN tl_window w on w.wid=wf.wid
+        <where> wf.type=2
+        <if test="wid!=null and wid!=''">
+            and wf.wid=#{wid}
+        </if>
+        <if test="type!=null">
+            AND ss.type=#{type}
+        </if>
+        <if test="type==null">
+            and ss.type in (1,2,3,4,5,6,7,8)
+        </if>
+        <if test="cid!=null and cid!=''">
+            and w.cid = #{cid}
+        </if>
+        <if test="startTime!=null and endTime!=null">
+            <!--AND IF(ss.supply_start <![CDATA[>=]]> #{startTime},ss.supply_end <![CDATA[<=]]> #{endTime},ss.supply_end <![CDATA[>=]]> #{endTime})-->
+            AND IF(ss.supply_start <![CDATA[<=]]> #{startTime},ss.supply_end <![CDATA[>=]]> #{endTime},ss.supply_end <![CDATA[<=]]> #{endTime})
+        </if>
+        </where>
+        )
+        ORDER BY crtime,id DESC
+    </select>
+    <select id="selectCanteenFoodInfo" resultType="com.tlongx.sorder.dto.FoodDto">
+        SELECT wf.id,cf.photo,cf.food_name foodName,cf.food_rmk foodRmk,cf.type,wf.price,cf.supply_count supplyCount
+        ,cf.supply_start supplyStart,cf.supply_end supplyEnd
+        FROM tl_window_food wf
+        LEFT JOIN tl_canteen_food cf ON cf.fid=wf.fid
+        where wf.id=#{id}
+    </select>
+    <select id="selectWindowFoodListByStu" resultType="com.tlongx.sorder.dto.FoodDto">
+        (SELECT wf.id,wf.wid,w.wname,wf.fid,wf.type,cf.photo,cf.food_name foodName,cf.food_rmk foodRmk,cf.monthly_sales monthlySales,wf.price,wf.crtime as crtime,c.id cardId,c.num cartNum,
+        wf.daily_supply dailySupply,wf.residue_supply residueSupply
+        FROM tl_window_food wf
+        LEFT JOIN tl_canteen_food cf on cf.fid=wf.fid
+        LEFT JOIN tl_window w on w.wid=wf.wid
+        LEFT JOIN tl_cart c on c.wfid=wf.id AND c.uid=#{uid} AND c.sub_date=#{startTime}
+        WHERE wf.type=1 AND wf.`status`=1
+        <if test="wid!=null and wid!=''">
+            and wf.wid=#{wid}
+        </if>
+        <if test="type!=null">
+            AND cf.type=#{type}
+        </if>
+        <if test="type==null">
+            and cf.type in (1,2,3,4,5,6,7,8)
+        </if>
+        <if test="cid!=null and cid!=''">
+            and cf.cid = #{cid}
+        </if>
+        <!--AND IF(cf.supply_start <![CDATA[>=]]> #{startTime},cf.supply_end <![CDATA[<=]]> #{endTime},cf.supply_end <![CDATA[>=]]> #{endTime})-->
+        AND IF(cf.supply_start <![CDATA[<=]]> #{startTime},cf.supply_end <![CDATA[>=]]> #{endTime},cf.supply_end <![CDATA[<=]]> #{endTime})
+        )
+        UNION
+        (SELECT wf.id,wf.wid,w.wname,wf.fid,wf.type,sf.photo,sf.food_name foodName,sf.food_rmk foodRmk,ss.monthly_sales monthlySales,wf.price,wf.crtime as crtime,c.id cardId,c.num cartNum,
+        wf.daily_supply dailySupply,wf.residue_supply residueSupply
+        FROM tl_window_food wf
+        LEFT JOIN tl_school_supfood ss ON ss.id=wf.fid
+        LEFT JOIN tl_supplier_food sf on sf.fid=ss.fid
+        LEFT JOIN tl_window w on w.wid=wf.wid
+        LEFT JOIN tl_cart c on c.wfid=wf.id AND c.uid=#{uid} AND c.sub_date=#{startTime}
+        WHERE wf.type=2 AND wf.`status`=1
+        <if test="wid!=null and wid!=''">
+            and wf.wid=#{wid}
+        </if>
+        <if test="type!=null">
+            AND ss.type=#{type}
+        </if>
+        <if test="type==null">
+            and ss.type in (1,2,3,4,5,6,7,8)
+        </if>
+        <if test="cid!=null and cid!=''">
+            and w.cid = #{cid}
+        </if>
+        <!--AND IF(ss.supply_start <![CDATA[>=]]> #{startTime},ss.supply_end <![CDATA[<=]]> #{endTime},ss.supply_end <![CDATA[>=]]> #{endTime})-->
+        AND IF(ss.supply_start <![CDATA[<=]]> #{startTime},ss.supply_end <![CDATA[>=]]> #{endTime},ss.supply_end <![CDATA[<=]]> #{endTime})
+        )
+    </select>
+    <select id="selectFoodListBack" resultType="com.tlongx.sorder.dto.FoodBackDto">
+        SELECT cf.food_name foodName,cf.price,cf.total_sales totalSales,cf.score,cf.type,@tmp:="自营" as suppiler,uc.uname,uc.phone,cf.crtime,c.cname,w.wname
+        FROM tl_canteen_food cf
+        LEFT JOIN tl_canteen c ON c.cid=cf.cid
+        LEFT JOIN tl_user_canteen uc on uc.cid=cf.cid AND uc.type=2
+        LEFT JOIN tl_window_food wf on wf.fid = cf.fid
+        LEFT JOIN tl_window w on w.wid = wf.wid
+        <where>
+            <if test="sid!=null and sid!=''">
+                cf.sid=#{sid}
+            </if>
+            <if test="supplier!=null and supplier!=''">
+                and @tmp like '%${supplier}%'
+            </if>
+            <if test="foodName!=null and foodName!=''">
+                and cf.food_name like '%${foodName}%'
+            </if>
+        </where>
+        UNION
+        SELECT sf.food_name foodName,ss.price,ss.total_sales totalSales,sf.score,ss.type,us.shop_name as supplier,us.leader_name uname,us.leader_phone phone,ss.crtime,c.cname,w.wname
+        FROM tl_school_supfood ss
+        LEFT JOIN tl_supplier_food sf on sf.fid =ss.fid
+        LEFT JOIN tl_user_supplier us on us.uid=sf.uid
+        LEFT JOIN tl_window_food wf on wf.fid = sf.fid
+        LEFT JOIN tl_window w on w.wid = wf.wid
+        LEFT JOIN tl_canteen c on c.cid = w.cid
+        <where>
+            <if test="sid!=null and sid!=''">
+                ss.sid=#{sid}
+            </if>
+            <if test="supplier!=null and supplier!=''">
+                and us.shop_name like '%${supplier}%'
+            </if>
+            <if test="foodName!=null and foodName!=''">
+                and sf.food_name like '%${foodName}%'
+            </if>
+        </where>
+        ORDER BY crtime desc
+    </select>
+    <update id="updateWindowFoodInfo">
+        update tl_window_food set price = #{price}, type = #{type}, daily_supply = #{dailySupply}, uptime = #{crtime} where fid = #{fid}
+    </update>
+</mapper>

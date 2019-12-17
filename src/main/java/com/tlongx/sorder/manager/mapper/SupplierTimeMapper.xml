@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.manager.dao.FoodCategoryMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.manager.pojo.SupplierTime">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="cid" jdbcType="INTEGER" property="id" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="supply_start" jdbcType="VARCHAR" property="supplyStart" />
+    <result column="supply_end" jdbcType="VARCHAR" property="supplyEnd" />
+    <result column="subsidy_price" jdbcType="DECIMAL" property="subsidyPrice" />
+    <result column="subsidy_status" jdbcType="INTEGER" property="subsidyStatus" />
+  </resultMap>
+</mapper>

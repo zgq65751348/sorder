@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.food.dao.CanteenFoodMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.food.pojo.CanteenFood">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="fid" jdbcType="INTEGER" property="fid" />
+    <result column="food_name" jdbcType="VARCHAR" property="foodName" />
+    <result column="food_rmk" jdbcType="VARCHAR" property="foodRmk" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="supply_start" jdbcType="VARCHAR" property="supplyStart" />
+    <result column="supply_end" jdbcType="VARCHAR" property="supplyEnd" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+    <result column="monthly_sales" jdbcType="INTEGER" property="monthlySales" />
+    <result column="total_sales" jdbcType="INTEGER" property="totalSales" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="supply_count" jdbcType="INTEGER" property="supplyCount" />
+  </resultMap>
+  <insert id="insertCanteenFood">
+    INSERT INTO tl_canteen_food
+    (food_name,food_rmk,type,cid,supply_start,supply_end,photo,crtime,price,uid,supply_count)
+    VALUES
+    <foreach collection ="list" item="item" separator =",">
+      (#{item.foodName}, #{item.foodRmk},#{item.type},#{item.cid},#{item.supplyStart},#{item.supplyEnd},#{item.photo},#{item.crtime},#{item.price},#{item.uid},#{item.supplyCount})
+    </foreach >
+  </insert>
+  <select id="selectCanteenFoodByFids" resultType="com.tlongx.sorder.food.pojo.CanteenFood">
+      SELECT cf.fid,cf.food_name foodName,cf.food_rmk foodRmk,cf.photo,cf.type,cf.price,cf.supply_count supplyCount,cf.supply_start supplyStart,cf.supply_end supplyEnd,
+      daily_supply dailySupply
+      FROM tl_canteen_food cf
+      <where>
+        cf.fid IN
+        <foreach collection="array" item="fid" index="index" open="(" close=")" separator=",">
+          #{fid}
+        </foreach>
+      </where>
+       order by cf.crtime desc
+  </select>
+  <select id="selectCanteenFoodList" resultType="com.tlongx.sorder.food.pojo.CanteenFood">
+    SELECT cf.fid,cf.food_name foodName,cf.food_rmk foodRmk,cf.type,cf.price,cf.bar_code barCode,cf.crtime
+    FROM tl_canteen_food cf
+    <where>
+      <if test="sid!=null and sid!=''">
+        cf.sid=#{sid}
+      </if>
+      <if test="type!=null and type!=''">
+        and cf.type=#{type}
+      </if>
+    </where>
+    order by cf.crtime desc
+  </select>
+  <update id="updateCanteenFoodMonthlySales" >
+    update tl_canteen_food set monthly_sales = 0,,uptime = now()
+  </update>
+</mapper>

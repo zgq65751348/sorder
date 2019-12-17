@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.manager.dao.FundsStatisticsMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.manager.pojo.FundsStatistics">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="income" jdbcType="DECIMAL" property="income" />
+    <result column="expand" jdbcType="DECIMAL" property="expand" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="total_price" jdbcType="DECIMAL" property="totalPrice" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="sys_recharge" jdbcType="DECIMAL" property="sysRecharge" />
+  </resultMap>
+  <select id="selectList" resultType="java.util.Map">
+    SELECT id,income,expand,sid,total_price,DATE_FORMAT(crtime,'%Y-%m-%d')crtime,type,sys_recharge FROM tl_funds_statistics WHERE 1=1
+    <if test="type!=null">
+        and type =#{type}
+    </if>
+    <if test="sid!=null">
+      and sid = #{sid}
+    </if>
+  </select>
+</mapper>

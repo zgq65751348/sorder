@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.manager.dao.SchoolMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.manager.pojo.School">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="sname" jdbcType="VARCHAR" property="sname" />
+    <result column="snum" jdbcType="VARCHAR" property="snum" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+    <result column="subsidy_status" jdbcType="INTEGER" property="subsidyStatus" />
+    <result column="subsidy_price" jdbcType="DECIMAL" property="subsidyPrice" />
+    <result column="subsidy_time" jdbcType="TIMESTAMP" property="subsidyTime" />
+    <result column="deposit_price" jdbcType="DECIMAL" property="depositPrice" />
+    <result column="total_deposit_price" jdbcType="DECIMAL" property="totalDepositPrice" />
+    <result column="opening_bank" jdbcType="VARCHAR" property="openingBank" />
+    <result column="bank_username" jdbcType="VARCHAR" property="bankUserName" />
+    <result column="bank_account" jdbcType="VARCHAR" property="bankAccount" />
+  </resultMap>
+
+  <insert id="insertSchool" useGeneratedKeys="true" keyProperty="sid" parameterType="com.tlongx.sorder.manager.pojo.School">
+      INSERT INTO tl_school(sname,snum,crtime,uptime,use_help,about_us) VALUES (#{sname},#{snum},#{crtime},#{uptime},#{useHelp},#{aboutUs})
+  </insert>
+  <select id="selectSchoolList" resultType="com.tlongx.sorder.dto.SchoolDto">
+    SELECT s.sid,s.sname,s.snum,s.crtime,m.overdue_time as overdueTime,m.mid,m.mname,m.username,m.phone,m.`status`,s.subsidy_status subsidyStatus
+    ,s.subsidy_price subsidyPrice,s.subsidy_time subsidyTime,s.dredge_alipay dredgeAlipay,s.dredge_wxpay dredgeWxpay,s.dredge_face dredgeFace,s.deposit_price depositPrice,s.total_deposit_price totalDepositPrice
+   ,s.balance
+    from tl_school s
+    JOIN tl_manager m ON m.sid=s.sid
+    <where>
+      <if test="crtime!=null and crtime!=''">
+        DATE_FORMAT(s.crtime,'%Y-%m-%d')=#{crtime}
+      </if>
+      <if test="username!=null and username!=''">
+        and m.username LIKE CONCAT ('%', #{username},'%')
+      </if>
+      <if test="sname!=null and sname!=''">
+        and s.sname LIKE CONCAT ('%', #{sname},'%')
+      </if>
+      <if test="mname!=null and mname!=''">
+        and m.mname LIKE CONCAT ('%', #{mname},'%')
+      </if>
+      <if test="sid!=null and sid!=''">
+        and s.sid=#{sid}
+      </if>
+      <if test="status!=null and status!=''">
+        and m.status=#{status}
+      </if>
+      <if test="role!=null and role!=''">
+        and m.role=#{role}
+      </if>
+    </where>
+    order by s.crtime desc
+  </select>
+  <select id="selectSchoolBySubsidy" resultType="com.tlongx.sorder.manager.pojo.School">
+    select s.sid,s.subsidy_price subsidyPrice,s.subsidy_time subsidyTime
+    from tl_school s
+    where s.subsidy_status=1 and DATE_FORMAT(s.subsidy_time,'%Y-%m-%d')=DATE_FORMAT(#{subsidyTime},'%Y-%m-%d')
+  </select>
+  <select id="selectPlaTradeList" resultType="com.tlongx.sorder.dto.PlatTradeDto">
+    SELECT s.sid,s.sname,IFNULL(in_tmp.sum,0) insum,IFNULL(out_tmp.sum,0) outsum
+    FROM tl_school s
+    LEFT JOIN (SELECT u.sid,SUM(t.price) as sum
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid =t.uid
+    WHERE t.trade_type in (1,2) and t.pay_type in (2,3,4)
+    and t.`status` =1 AND t.ie=2 AND t.crtime  <![CDATA[>=]]> #{startTime} AND t.crtime <![CDATA[<=]]> #{endTime}
+    GROUP BY u.sid) in_tmp ON in_tmp.sid=s.sid
+    LEFT JOIN (SELECT u.sid,SUM(t.price) as sum
+    from tl_trade t
+    LEFT JOIN tl_user u on u.uid =t.uid
+    WHERE t.trade_type in (3,4) and t.pay_type in (2,3,4)
+    and t.`status` =1 AND t.ie=1 AND t.crtime <![CDATA[>=]]> #{startTime} AND t.crtime <![CDATA[<=]]> #{endTime}
+    GROUP BY u.sid) out_tmp ON out_tmp.sid=s.sid
+    <where>
+      <if test="sid!=null and sid!=''">
+        s.tid=#{sid}
+      </if>
+    </where>
+    order by s.crtime desc
+  </select>
+  <select id="selectSchoolComboBoxList" resultType="com.tlongx.sorder.manager.pojo.School">
+    select sid,sname
+    from tl_school
+  </select>
+  <select id="selectSchoolBankAccountInfo" resultType="com.tlongx.sorder.manager.pojo.School">
+    select opening_bank as openingBank,bank_username as bankUserName,bank_account as bankAccount from tl_school where sid = #{sid}
+  </select>
+  <select id="selectSchoolAccount" resultType="com.tlongx.sorder.dto.SchoolDto">
+    select m.mname,m.phone,s.sname,s.opening_bank as openingBank,s.bank_account as bankAccount,s.bank_username as bankUserName,s.balance
+    from tl_school s
+    left join tl_manager m on m.sid = s.sid
+    where m.role = 1  and m.status =1 and m.type = 1 and s.sid =#{sid}
+  </select>
+  <update id="updateSchoolDepositPrice">
+    update tl_school set deposit_price = 0
+  </update>
+</mapper>

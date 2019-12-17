@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.user.dao.UserSupplierMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.user.pojo.UserSupplier">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="token" jdbcType="VARCHAR" property="token" />
+    <result column="portrait" jdbcType="VARCHAR" property="portrait" />
+    <result column="main_product" jdbcType="VARCHAR" property="mainProduct" />
+    <result column="balance" jdbcType="DOUBLE" property="balance" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+    <result column="leader_name" jdbcType="VARCHAR" property="leaderName" />
+    <result column="leader_phone" jdbcType="VARCHAR" property="leaderPhone" />
+    <result column="id_card_front" jdbcType="VARCHAR" property="idCardFront" />
+    <result column="id_card_contrary" jdbcType="VARCHAR" property="idCardContrary" />
+    <result column="business_license" jdbcType="VARCHAR" property="businessLicense" />
+    <result column="relevant_license" jdbcType="VARCHAR" property="relevantLicense" />
+    <result column="shop_name" jdbcType="VARCHAR" property="shopName" />
+    <result column="shop_photo" jdbcType="VARCHAR" property="shopPhoto" />
+    <result column="sale_count" jdbcType="INTEGER" property="saleCount" />
+    <result column="approve_time" jdbcType="TIMESTAMP" property="approveTime" />
+    <result column="axf" jdbcType="INTEGER" property="axf" />
+    <result column="score" jdbcType="VARCHAR" property="score" />
+  </resultMap>
+    <select id="selectUserSupplierInfo" resultType="java.util.Map">
+      SELECT us.uid,us.token,us.leader_name leaderName,us.leader_phone leaderPhone,us.main_product mainProduct,
+      us.phone,us.id_card_front idCardFront,us.id_card_contrary idCardContrary,us.business_license busLic,us.relevant_license relLic,
+      us.balance,DATE_FORMAT(us.crtime,'%Y-%m-%d %H:%i:%s') as crtime,DATE_FORMAT(us.uptime,'%Y-%m-%d %H:%i:%s') as uptime,us.`status`,us.shop_name shopName,us.shop_photo shopPhoto,us.sale_count saleCount,us.portrait
+      FROM tl_user_supplier us
+      <where>
+        <if test= "token!=null and token!=''">
+          us.token =#{token}
+        </if>
+        <if test="phone!=null and phone!=''">
+          and us.phone=#{phone}
+        </if>
+        <if test="password!=null and password!=''">
+          and us.password=#{password}
+        </if>
+      </where>
+    </select>
+  <select id="selectUserSupplierBySidInfo" resultType="com.tlongx.sorder.user.pojo.UserSupplier">
+      SELECT us.uid,us.shop_name shopName,us.shop_photo shopPhoto,us.axf,us.m_sale_count mSaleCount,us.score,us.main_product mainProduct
+      FROM tl_user_supplier us
+      <where>
+        <if test="uid!=null">
+          us.uid=#{uid}
+        </if>
+      </where>
+  </select>
+</mapper>

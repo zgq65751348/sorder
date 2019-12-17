@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.manager.dao.CanteenMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.manager.pojo.Canteen">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="cname" jdbcType="VARCHAR" property="cname" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="sname" jdbcType="VARCHAR" property="sname" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+  </resultMap>
+  
+  <insert id="insertCanteenReturnId" useGeneratedKeys="true" keyProperty="cid" parameterType="com.tlongx.sorder.manager.pojo.Canteen">
+      INSERT INTO tl_canteen (cname,sid,sname,crtime,uptime) VALUES (#{cname},#{sid},#{sname},#{crtime},#{uptime})
+  </insert>
+
+  <select id="selectCanteenList" resultType="com.tlongx.sorder.user.pojo.UserCanteen">
+      SELECT c.cid,c.cname,uc.uname,uc.phone,uc.sex,uc.uid
+      FROM tl_canteen c
+      LEFT JOIN tl_user_canteen uc on uc.cid=c.cid AND uc.type=2
+      WHERE c.sid=#{sid}
+      Order By c.crtime desc
+  </select>
+</mapper>

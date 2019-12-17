@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.food.dao.SchoolSupfoodMapper">
+    <resultMap id="BaseResultMap" type="com.tlongx.sorder.food.pojo.SchoolSupfood">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="fid" jdbcType="INTEGER" property="fid"/>
+        <result column="sid" jdbcType="INTEGER" property="sid"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="supply_start" jdbcType="VARCHAR" property="supplyStart"/>
+        <result column="supply_end" jdbcType="VARCHAR" property="supplyEnd"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="monthly_sales" jdbcType="INTEGER" property="monthlySales"/>
+        <result column="total_sales" jdbcType="INTEGER" property="totalSales"/>
+        <result column="buy_count" jdbcType="INTEGER" property="buyCount"/>
+        <result column="supplier_count" jdbcType="INTEGER" property="supplierCount"/>
+        <result column="crtime" jdbcType="TIMESTAMP" property="crtime"/>
+        <result column="uptime" jdbcType="TIMESTAMP" property="uptime"/>
+    </resultMap>
+    <insert id="insertSchoolSupfood">
+        INSERT INTO tl_school_supfood
+        (fid,sid,type,supply_start,supply_end,buy_count,crtime)
+        <foreach collection="list" item="item" separator=",">
+            (#{item.fid},
+            #{item.sid},#{item.type},#{item.supplyStart},#{item.supplyEnd},#{item.buyCount},#{item.crtime})
+        </foreach>
+    </insert>
+
+    <select id="selectSchoolSupFood" resultType="com.tlongx.sorder.dto.FoodDto">
+        SELECT ss.id,sf.fid,sf.food_name foodName,sf.food_rmk foodRmk,sf.photo,ss.monthly_sales
+        monthlySales,sf.price,ss.status,ss.supplier_count supplyCount,ss.daily_supply dailySupply
+        ,ss.supply_start supplyStart,ss.supply_end supplyEnd,ss.type
+        FROM tl_school_supfood ss
+        LEFT JOIN tl_supplier_food sf on sf.fid=ss.fid
+        <where>
+            <if test="id!=null and id!=''">
+                ss.id=#{id}
+            </if>
+            <if test="sid!=null and sid!=''">
+                and ss.sid=#{sid}
+            </if>
+            <if test="startTime!=null and endTime!=null">
+                and IF(ss.supply_start <![CDATA[>=]]> #{startTime},ss.supply_end <![CDATA[>=]]> #{endTime},ss.supply_end
+                <![CDATA[<=]]> #{endTime})
+            </if>
+            <if test="type!=null and type!=''">
+                and ss.type=#{type}
+            </if>
+            <if test="uid!=null and uid!=''">
+                and sf.uid=#{uid}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectWidBySupId" resultType="com.tlongx.sorder.manager.pojo.Window">
+        SELECT w.wid,w.type
+        FROM tl_window w
+        JOIN tl_school_supfood ss on ss.sid=w.sid
+        WHERE ss.id=#{id}
+    </select>
+
+    <update id="updateSupfoodMonthlySales">
+        update tl_school_supfood set monthly_sales = 0,uptime = now()
+    </update>
+</mapper>

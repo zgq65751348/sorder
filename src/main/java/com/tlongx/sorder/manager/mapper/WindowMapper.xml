@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.manager.dao.WindowMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.manager.pojo.Window">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="wid" jdbcType="INTEGER" property="wid" />
+    <result column="wname" jdbcType="VARCHAR" property="wname" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+  </resultMap>
+  <select id="selectWindowList" resultType="com.tlongx.sorder.manager.pojo.Window">
+      select wid,wname,status,type
+      from tl_window
+      where type != 3
+        <if test="cid!=null and cid!=''">
+          and cid=#{cid}
+        </if>
+  </select>
+    <select id="selectWindowMessage" resultType="com.tlongx.sorder.dto.WindowDto">
+      SELECT c.cname,w.wname,st.supply_start supplyStart, st.supply_end supplyEnd
+      FROM tl_supplier_time st
+      LEFT JOIN tl_school s on s.sid=st.sid
+      LEFT JOIN tl_canteen c on c.sid=s.sid
+      LEFT JOIN tl_window w on w.cid=c.cid
+      WHERE w.wid=#{wid} and st.type=#{type}
+    </select>
+
+
+</mapper>

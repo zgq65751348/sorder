@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.food.dao.SupplierFoodMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.food.pojo.SupplierFood">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="fid" jdbcType="INTEGER" property="fid" />
+    <result column="food_name" jdbcType="VARCHAR" property="foodName" />
+    <result column="food_rmk" jdbcType="VARCHAR" property="foodRmk" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+  </resultMap>
+    <insert id="insertSupplierFoodBatch">
+      INSERT INTO tl_supplier_food
+      (food_name,food_rmk,photo,crtime,price,uid)
+      VALUES
+      <foreach collection ="list" item="item" separator =",">
+        (#{item.foodName}, #{item.foodRmk},#{item.photo},#{item.crtime},#{item.price},#{item.uid})
+      </foreach >
+    </insert>
+
+
+  <select id="selectSupplierFoodList" resultType="com.tlongx.sorder.dto.FoodDto">
+    SELECT sf.fid,sf.photo,sf.food_name foodName,sf.food_rmk foodRmk,sf.price
+    FROM tl_supplier_food sf
+    <where>
+      <if test="status!=null and status!=''">
+        sf.status=#{status}
+      </if>
+      <if test="uid!=null">
+        and sf.uid=#{uid}
+      </if>
+      <if test="fids!=null and fids.length>0">
+        and sf.fid in
+        <foreach collection="fids" item="fid" index="index" open="(" close=")" separator=",">
+          #{fid}
+        </foreach>
+      </if>
+    </where>
+  </select>
+</mapper>

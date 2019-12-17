@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.order.dao.CartMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.order.pojo.Cart">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="wfid" jdbcType="INTEGER" property="wfid" />
+    <result column="num" jdbcType="INTEGER" property="num" />
+    <result column="sub_date" jdbcType="VARCHAR" property="subDate" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+  </resultMap>
+    <update id="cleanCart">
+      update tl_cart set status=0 where sub_date=DATE_FORMAT(now(),"%Y-%m-%d")
+    </update>
+    <select id="selectCartList" resultType="java.util.Map">
+      (SELECT c.id,c.sub_date subDate,c.num,cf.photo,cf.food_name foodName,w.wname,ct.cname,wf.price,cf.type,wf.id wfid,wf.residue_supply residueSupply,wf.daily_supply dailySupply
+        FROM tl_cart c
+        LEFT JOIN tl_window_food wf on wf.id=c.wfid
+        LEFT JOIN tl_canteen_food cf on cf.fid=wf.fid
+        LEFT JOIN tl_window w on w.wid=wf.wid
+        LEFT JOIN tl_canteen ct on ct.cid=w.cid
+        WHERE c.status=1 AND wf.type=1 and c.uid=#{uid}
+        <if test="ids!=null and ids!=''">
+          and c.id in
+          <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+          #{id}
+          </foreach>
+        </if>)
+        UNION
+        (SELECT c.id,c.sub_date subDate,c.num,sf.photo,sf.food_name foodName,w.wname,ct.cname,wf.price,ss.type,wf.id wfid,wf.residue_supply residueSupply,wf.daily_supply dailySupply
+        FROM tl_cart c
+        LEFT JOIN tl_window_food wf on wf.id=c.wfid
+        LEFT JOIN tl_school_supfood ss ON ss.id=wf.fid
+        LEFT JOIN tl_supplier_food sf ON sf.fid=ss.fid
+        LEFT JOIN tl_window w on w.wid=wf.wid
+        LEFT JOIN tl_canteen ct on ct.cid=w.cid
+        WHERE c.status=1 AND wf.type=2 and c.uid=#{uid}
+        <if test="ids!=null and ids!=''">
+        and c.id in
+        <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+          #{id}
+        </foreach>
+        </if>)
+        ORDER BY subDate DESC
+    </select>
+    <delete id="deleteCart">
+      delete from tl_cart
+    </delete>
+</mapper>

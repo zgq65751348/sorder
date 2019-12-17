@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.order.dao.CommentMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.order.pojo.Comment">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="oid" jdbcType="INTEGER" property="oid" />
+    <result column="fid" jdbcType="INTEGER" property="fid" />
+    <result column="food_name" jdbcType="VARCHAR" property="foodName" />
+    <result column="food_type" jdbcType="INTEGER" property="foodType" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="reply" jdbcType="VARCHAR" property="reply" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="score" jdbcType="VARCHAR" property="score" />
+    <result column="anomy" jdbcType="INTEGER" property="anomy" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+  </resultMap>
+    <select id="selectCommentByCidOrUid" resultType="com.tlongx.sorder.dto.CommentDto">
+      SELECT c.id,t.icon,IF(c.anomy=1,'匿名',t.username) username,c.photo,c.crtime,c.score,c.remark,c.reply,u.cname,c.food_name foodName
+      FROM tl_comment c
+      LEFT JOIN tl_user_canteen u ON u.cid = c.cid
+      LEFT JOIN tl_user t on t.uid = c.uid
+      <where>
+        <if test="uid!=null and uid!=''">
+          u.uid=#{uid}
+        </if>
+      </where>
+      ORDER BY c.crtime DESC
+    </select>
+  <select id="selectCommentBySid" resultType="com.tlongx.sorder.dto.CommentDto">
+    SELECT c.id,c.food_name foodName,c.score,c.remark,IF(c.food_type=1,'自营','') supplier,uc.uname userName,uc.phone userPhone,c.crtime
+    FROM tl_comment c
+    LEFT JOIN tl_canteen_food cf on cf.fid = c.fid
+    LEFT JOIN tl_user_canteen uc on uc.uid = cf.uid
+    <where>
+      <if test="sid!=null and sid!=''">
+        c.sid=#{sid}
+      </if>
+      <if test="foodName!=null and foodName!=''">
+        and c.food_name like '%${foodName}%'
+      </if>
+      and c.food_type=1  and uc.type=2
+      <if test="supplier!=null and supplier!=''">
+        HAVING c.supplier LIKE '%${supplier}%'
+      </if>
+    </where>
+    union
+    SELECT c.id,c.food_name foodName,c.score,c.remark,IF(c.food_type=1,'自营',us.shop_name) supplier,us.leader_name userName,us.leader_phone userPhone,c.crtime
+    FROM tl_comment c
+    LEFT JOIN tl_school_supfood sc on sc.id =c.fid
+    LEFT JOIN tl_supplier_food sf on sf.fid = sc.fid
+    LEFT JOIN tl_user_supplier us on us.uid = sf.uid
+    <where>
+      <if test="sid!=null and sid!=''">
+        c.sid=#{sid}
+      </if>
+      <if test="foodName!=null and foodName!=''">
+        and c.food_name like '%${foodName}%'
+      </if>
+      and c.food_type=2
+      <if test="supplier!=null and supplier!=''">
+        HAVING c.supplier LIKE '%${supplier}%'
+      </if>
+    </where>
+    ORDER BY crtime DESC
+  </select>
+  <select id="selectCommentListNow" resultType="com.tlongx.sorder.order.pojo.Comment">
+    SELECT id,fid,food_type foodType,score
+    FROM tl_comment
+    WHERE DATE_FORMAT(crtime,'%Y-%m-%d')=DATE_FORMAT(NOW(),'%Y-%m-%d')
+  </select>
+  <select id="selectSupplierCommentList" resultType="com.tlongx.sorder.dto.CommentDto">
+    select c.id,t.icon,IF(c.anomy=1,'匿名',t.username) username,c.photo,c.crtime,c.score,c.remark,c.reply,u.cname,c.food_name foodName
+    from tl_comment c
+    LEFT JOIN tl_user t on t.uid = c.uid
+    LEFT JOIN tl_order_item ot on ot.id = c.oid
+    LEFT JOIN tl_window_food wf on wf.id = ot.wfid
+    LEFT JOIN tl_school_supfood ss on ss.id = wf.fid
+    LEFT JOIN tl_supplier_food sf on sf.fid =ss.fid
+    LEFT JOIN tl_school_supplier sc on sc.uid = sf.uid
+    LEFT JOIN tl_user_canteen u on u.sid = sc.sid
+    <where>
+      <if test="suid!=null and suid!=''">
+        sf.uid = #{suid}
+      </if>
+      <if test="uid!=null and uid!=''">
+        and u.uid = #{uid}
+      </if>
+    </where>
+  </select>
+  <select id="selectMyCommentList" resultType="com.tlongx.sorder.dto.CommentDto">
+    SELECT DISTINCT c.id,t.icon,IF(c.anomy=1,'匿名',t.username) username,c.photo,c.crtime,c.score,c.remark,c.reply,u.cname,c.food_name foodName
+    FROM tl_comment c
+    LEFT JOIN tl_user_canteen u ON u.cid = c.cid
+    LEFT JOIN tl_user t on t.uid = c.uid
+    <where>
+      <if test="uid!=null and uid!=''">
+        t.uid=#{uid}
+      </if>
+    </where>
+    ORDER BY c.crtime DESC
+  </select>
+</mapper>

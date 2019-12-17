@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.order.dao.RechargeMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.order.pojo.Recharge">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="uptime" jdbcType="TIMESTAMP" property="uptime" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+  </resultMap>
+</mapper>

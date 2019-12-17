@@ -1,0 +1,35 @@
+2019-07-13 10:22:42.255  INFO 13612 --- [restartedMain] com.tlongx.sorder.SorderApplication      : Starting SorderApplication on tlongx-java with PID 13612 (C:\IDEAWorkSpace\sorder\target\classes started by tlongx-JAVA in C:\IDEAWorkSpace\sorder)
+2019-07-13 10:22:42.261  INFO 13612 --- [restartedMain] com.tlongx.sorder.SorderApplication      : No active profile set, falling back to default profiles: default
+2019-07-13 10:22:42.398  INFO 13612 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-07-13 10:22:42.399  INFO 13612 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-07-13 10:22:44.861  WARN 13612 --- [restartedMain] o.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[com.tlongx.sorder]' package. Please check your configuration.
+2019-07-13 10:22:45.441  INFO 13612 --- [restartedMain] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$e7f6d8f4] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2019-07-13 10:22:46.478  INFO 13612 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
+2019-07-13 10:22:46.514  INFO 13612 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2019-07-13 10:22:46.514  INFO 13612 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.14]
+2019-07-13 10:22:46.525  INFO 13612 --- [restartedMain] o.a.catalina.core.AprLifecycleListener   : The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk1.8.0_211\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files\erl10.0.1\bin;C:\Program Files\Java\jdk1.8.0_211\bin;C:\Program Files\Java\jdk1.8.0_211\jre\bin;C:\javahj\apache-maven-3.5.4\bin;c:\windows\system32;C:\Program Files\nodejs\;C:\Program Files\TortoiseSVN\bin;C:\Program Files\Git\cmd;C:\Program Files\RabbitMQ Server\rabbitmq_server-3.7.8\sbin;C:\Users\tlongx-meetingRoom\AppData\Local\Microsoft\WindowsApps;C:\Users\tlongx-meetingRoom\AppData\Roaming\npm;.]
+2019-07-13 10:22:46.691  INFO 13612 --- [restartedMain] o.a.c.c.C.[.[localhost].[/sorder]        : Initializing Spring embedded WebApplicationContext
+2019-07-13 10:22:46.691  INFO 13612 --- [restartedMain] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 4291 ms
+2019-07-13 10:22:46.962  INFO 13612 --- [restartedMain] c.a.d.s.b.a.DruidDataSourceAutoConfigure : Init DruidDataSource
+2019-07-13 10:22:47.758  INFO 13612 --- [restartedMain] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+2019-07-13 10:22:51.154  INFO 13612 --- [restartedMain] pertySourcedRequestMappingHandlerMapping : Mapped URL path [/v2/api-docs] onto method [public org.springframework.http.ResponseEntity<springfox.documentation.spring.web.json.Json> springfox.documentation.swagger2.web.Swagger2Controller.getDocumentation(java.lang.String,javax.servlet.http.HttpServletRequest)]
+2019-07-13 10:22:51.459  INFO 13612 --- [restartedMain] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 'applicationTaskExecutor'
+2019-07-13 10:22:51.630  INFO 13612 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2019-07-13 10:22:52.027  INFO 13612 --- [restartedMain] o.s.s.c.ThreadPoolTaskScheduler          : Initializing ExecutorService 'taskScheduler'
+2019-07-13 10:22:52.139  INFO 13612 --- [restartedMain] d.s.w.p.DocumentationPluginsBootstrapper : Context refreshed
+2019-07-13 10:22:52.170  INFO 13612 --- [restartedMain] d.s.w.p.DocumentationPluginsBootstrapper : Found 1 custom documentation plugin(s)
+2019-07-13 10:22:52.228  INFO 13612 --- [restartedMain] s.d.s.w.s.ApiListingReferenceScanner     : Scanning for api listing references
+2019-07-13 10:22:52.452  WARN 13612 --- [restartedMain] s.d.s.w.r.p.ParameterDataTypeReader      : Trying to infer dataType org.springframework.web.multipart.MultipartFile[]
+2019-07-13 10:22:52.453  WARN 13612 --- [restartedMain] s.d.s.w.r.p.ParameterDataTypeReader      : Trying to infer dataType com.tlongx.common.enums.ResourceType
+2019-07-13 10:22:52.454  WARN 13612 --- [restartedMain] s.d.s.w.r.p.ParameterDataTypeReader      : Trying to infer dataType com.tlongx.common.enums.ResourceBusiness
+2019-07-13 10:22:52.742  INFO 13612 --- [restartedMain] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: getFoodCategoryListUsingPOST_1
+2019-07-13 10:22:52.826  INFO 13612 --- [restartedMain] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: getWindowListUsingPOST_1
+2019-07-13 10:22:53.016  INFO 13612 --- [restartedMain] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: getUserInfoUsingPOST_1
+2019-07-13 10:22:53.019  INFO 13612 --- [restartedMain] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: getUserSupplierInfoUsingPOST_1
+2019-07-13 10:22:53.021  INFO 13612 --- [restartedMain] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: getWindowListUsingPOST_2
+2019-07-13 10:22:53.022  INFO 13612 --- [restartedMain] .d.s.w.r.o.CachingOperationNameGenerator : Generating unique operation named: loginUsingPOST_1
+2019-07-13 10:22:53.100  INFO 13612 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path '/sorder'
+2019-07-13 10:22:53.105  INFO 13612 --- [restartedMain] com.tlongx.sorder.SorderApplication      : Started SorderApplication in 11.562 seconds (JVM running for 12.866)
+2019-07-13 10:23:32.025  INFO 13612 --- [Thread-31] o.s.s.c.ThreadPoolTaskScheduler          : Shutting down ExecutorService 'taskScheduler'
+2019-07-13 10:23:32.027  INFO 13612 --- [Thread-31] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'applicationTaskExecutor'
+2019-07-13 10:23:32.049  INFO 13612 --- [Thread-31] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} closed

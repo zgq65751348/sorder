@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tlongx.sorder.msg.dao.MsgMapper">
+  <resultMap id="BaseResultMap" type="com.tlongx.sorder.msg.pojo.Msg">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="mid" jdbcType="INTEGER" property="mid" />
+    <result column="push_platform" jdbcType="INTEGER" property="pushPlatform" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="push_obj" jdbcType="INTEGER" property="pushObj" />
+    <result column="sid" jdbcType="INTEGER" property="sid" />
+    <result column="crtime" jdbcType="TIMESTAMP" property="crtime" />
+    <result column="context" jdbcType="LONGVARCHAR" property="context" />
+  </resultMap>
+
+    <select id="selectMsgList" resultType="com.tlongx.sorder.msg.pojo.Msg">
+      SELECT mid,push_platform pushPlatform,title,push_obj pushObj,crtime,context
+      FROM tl_msg
+      <where>
+        <if test="sid!=null and sid!=''">
+            sid=#{sid}
+        </if>
+        <if test="startTime!=null">
+            and crtime <![CDATA[>=]]> #{startTime}
+        </if>
+        <if test="endTime!=null">
+            and crtime <![CDATA[<=]]> #{endTime}
+        </if>
+      </where>
+      order by crtime desc
+    </select>
+</mapper>
